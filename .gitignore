@@ -3,5 +3,10 @@
 /.pnp
 .pnp.js
 
-# TODO file
+# ts build
+/built
+
+# TODO file & resources
 TODO.md
+src/code.txt
+resources.txt
