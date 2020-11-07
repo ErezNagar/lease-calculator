@@ -188,7 +188,7 @@ class LeaseCalculator {
     Returns: Number
   */
   getAcquisitionFee() {
-    const make = MAKES.filter((make) => make.displayName === this.make);
+    const make = MAKES.filter((m) => m.displayName === this.make);
     if (make.length === 0) {
       return 0;
     }
@@ -203,7 +203,7 @@ class LeaseCalculator {
     Returns: Number
   */
   getDispositionFee() {
-    const make = MAKES.filter((make) => make.displayName === this.make);
+    const make = MAKES.filter((m) => m.displayName === this.make);
     if (make.length === 0) {
       return 0;
     }
