@@ -1,17 +1,33 @@
-import {
-  TAX_ON_MONTHLY_PAYMENT,
-  TAX_ON_SALES_PRICE,
-  TAX_ON_TOTAL_LEASE_PAYMENT,
-  MAKES,
-  MANUFACTURER_FEES,
-} from "./constants";
+import { TaxationMethod, MAKES } from "./constants";
+
+interface LeaseCalculator {
+  make?: string;
+  msrp: number;
+  sellingPrice: number;
+  rv: number;
+  isRVPercent: boolean;
+  RVPercent: number;
+  RVValue: number;
+  mf: number;
+  leaseTerm: number;
+  salesTax: number;
+  totalFees: number;
+  rebates: number;
+  tradeIn: number;
+  downPayment: number;
+  apr: number;
+  monthlyPaymentPreTax: number;
+  monthlyPayment: number;
+  driveOffPayment: number;
+  taxMethod: TaxationMethod;
+}
 
 class LeaseCalculator {
   /*
     Validates required fields.
     Throws: Error | If there's an invalid required field
   */
-  _validateData() {
+  _validateData(): void {
     const requiredInputs = [
       "MSRP",
       "Selling Price",
@@ -29,7 +45,7 @@ class LeaseCalculator {
   /*
     Calculates the absolute and relative residual value of the vehicle
   */
-  _calculateRV() {
+  _calculateRV(): void {
     if (this.isRVPercent) {
       this.RVValue = this.msrp * (this.rv / 100);
       this.RVPercent = this.rv;
@@ -42,9 +58,8 @@ class LeaseCalculator {
   /*
     Converts the lease' money factor to APR.
     Note: To keep calculation accruate, we might need to truncate this value only on consumer read
-    Returns: Number
   */
-  _MFToAPR() {
+  _MFToAPR(): number {
     return this.mf * 2400;
   }
 
@@ -78,8 +93,8 @@ class LeaseCalculator {
     rebates = 0,
     tradeIn = 0,
     downPayment = 0,
-    taxMethod = TAX_ON_MONTHLY_PAYMENT,
-  }) {
+    taxMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT,
+  }): void {
     this.make = make;
     this.msrp = msrp;
     this.sellingPrice = sellingPrice;
@@ -113,41 +128,36 @@ class LeaseCalculator {
 
   /*
     Gets the residual value of the lease in percentage 
-    Returns: Number
   */
-  getRVPercentage() {
+  getRVPercentage(): number {
     return Math.round(this.RVPercent);
   }
 
   /*
     Gets the residual value of the lease
-    Returns: Number
   */
-  getRVValue() {
+  getRVValue(): number {
     return Number.parseFloat(this.RVValue.toFixed(2));
   }
 
   /*
     Gets the monthly payment of the lease, not including taxes
-    Returns: Number
   */
-  getMonthlyPaymentPreTax() {
+  getMonthlyPaymentPreTax(): number {
     return Math.round(this.monthlyPaymentPreTax * 100) / 100;
   }
 
   /*
     Gets the monthly payment of the lease, including taxes
-    Returns: Number
   */
-  getMonthlyPayment() {
+  getMonthlyPayment(): number {
     return Math.round(this.monthlyPayment * 100) / 100;
   }
 
   /*
     Gets the discount off of the MSRP, in percentage
-    Returns: Number
   */
-  getDiscountOffMsrpPercentage() {
+  getDiscountOffMsrpPercentage(): number {
     const offMsrp = this.msrp - this.sellingPrice;
     const offMsrpPercentage = (offMsrp / this.msrp) * 100;
     return Math.round(offMsrpPercentage * 100) / 100;
@@ -155,18 +165,16 @@ class LeaseCalculator {
 
   /*
     Gets the percentage of the monthly payment out of the MSRP
-    Returns: Number
   */
-  getMonthlyPaymentToMsrpPercentage() {
+  getMonthlyPaymentToMsrpPercentage(): number {
     const msrpPercentage = (this.monthlyPayment / this.msrp) * 100;
     return Math.round(msrpPercentage * 100) / 100;
   }
 
   /*
     Gets the total cost of the lease
-    Returns: Number
   */
-  getTotalLeaseCost() {
+  getTotalLeaseCost(): number {
     const totalCost =
       // First monthly payment is included in drive-off
       this.monthlyPayment * (this.leaseTerm - 1) +
@@ -177,63 +185,54 @@ class LeaseCalculator {
 
   /*
     Gets the APR value of the lease
-    Returns: Number
   */
-  getAPR() {
+  getAPR(): number {
     return Math.round(this.apr * 100) / 100;
   }
 
   /*
     Gets the acquisition fee value by brand. If no brand sepcified, returns 0;
-    Returns: Number
   */
-  getAcquisitionFee() {
+  getAcquisitionFee(): number {
     const make = MAKES.filter((m) => m.displayName === this.make);
     if (make.length === 0) {
       return 0;
     }
 
-    return MANUFACTURER_FEES.filter(
-      (manufacturer) => manufacturer.makeId === make[0].id
-    )[0].acquisitionFee;
+    return make[0].acquisitionFee;
   }
 
   /*
     Gets the disposition fee value by brand. If no brand sepcified, returns 0;
-    Returns: Number
   */
-  getDispositionFee() {
+  getDispositionFee(): number {
     const make = MAKES.filter((m) => m.displayName === this.make);
     if (make.length === 0) {
       return 0;
     }
 
-    return MANUFACTURER_FEES.filter(
-      (manufacturer) => manufacturer.makeId === make[0].id
-    )[0].dispositionFee;
+    return make[0].dispositionFee ? make[0].dispositionFee : 0;
   }
 
   /*
     Calculates monthly payment based on method of taxation
-    Returns: Number
   */
-  calculateMonthlyPaymentWithTax() {
-    if (this.taxMethod === TAX_ON_MONTHLY_PAYMENT)
+  calculateMonthlyPaymentWithTax(): number {
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT)
       return this.monthlyPaymentPreTax * (1 + this.salesTax / 100);
     return this.monthlyPaymentPreTax;
   }
 
   /*
     Calculates the drive-off tax based on method of taxation
-    Returns: Number
   */
-  calculateDriveOffTaxes() {
+  calculateDriveOffTaxes(): number {
     let taxableAmount;
-    if (this.taxMethod === TAX_ON_MONTHLY_PAYMENT) {
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
       taxableAmount = this.downPayment + this.totalFees;
-    } else if (this.taxMethod === TAX_ON_SALES_PRICE) {
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
       taxableAmount = this.sellingPrice;
-    } else if (this.taxMethod === TAX_ON_TOTAL_LEASE_PAYMENT) {
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
       taxableAmount =
         this.monthlyPaymentPreTax +
         this.downPayment +
@@ -247,9 +246,8 @@ class LeaseCalculator {
 
   /*
     Calculates total drive-off payment
-    Returns: Number
   */
-  getDriveOffPayment() {
+  getDriveOffPayment(): number {
     const driveOffTaxes = this.calculateDriveOffTaxes();
     return (
       driveOffTaxes +

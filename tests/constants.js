@@ -1,7 +1,4 @@
-import {
-  TAX_ON_SALES_PRICE,
-  TAX_ON_TOTAL_LEASE_PAYMENT,
-} from "../src/constants";
+import { TaxationMethod } from "../src/constants";
 
 export const DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT = {
   make: "Toyota",
@@ -55,12 +52,12 @@ export const WHEN_TAX_ON_MONTHLY_PAYMENT = {
 
 export const DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE = {
   ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
-  taxMethod: TAX_ON_SALES_PRICE,
+  taxMethod: TaxationMethod.TAX_ON_SALES_PRICE,
 };
 
 export const DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE = {
   ...DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
-  taxMethod: TAX_ON_SALES_PRICE,
+  taxMethod: TaxationMethod.TAX_ON_SALES_PRICE,
 };
 
 export const WHEN_TAX_ON_SALES_PRICE = {
@@ -74,12 +71,12 @@ export const WHEN_TAX_ON_SALES_PRICE = {
 
 export const DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT = {
   ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
-  taxMethod: TAX_ON_TOTAL_LEASE_PAYMENT,
+  taxMethod: TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT,
 };
 
 export const DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT = {
   ...DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
-  taxMethod: TAX_ON_TOTAL_LEASE_PAYMENT,
+  taxMethod: TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT,
 };
 
 export const WHEN_TAX_ON_LEASE_PAYMENT = {
