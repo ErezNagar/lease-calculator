@@ -4,7 +4,7 @@
   "description": "A simple car lease calculator library",
   "author": "Erez Nagar",
   "license": "MIT",
-  "main": "src/LeaseCalculator.js",
+  "main": "built/LeaseCalculator.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ErezNagar/lease-calculator"
@@ -14,9 +14,6 @@
     "calculator",
     "car lease calculator",
     "lease calculator"
-  ],
-  "files": [
-    "built/**/*"
   ],
   "scripts": {
     "build": "tsc",
