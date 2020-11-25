@@ -14,16 +14,7 @@ export const DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT = {
 };
 
 export const DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT = {
-  make: "Toyota",
-  msrp: 23000,
-  sellingPrice: 21000,
-  rv: 13110,
-  isRVPercent: false,
-  mf: 0.00125,
-  leaseTerm: 36,
-  salesTax: 10.25,
-  totalFees: 1200,
-  rebates: 500,
+  ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
   rebates: 0,
   downPayment: 1700,
 };
@@ -39,7 +30,7 @@ export const RV_PERCENTAGE = 57;
 export const ACQUISITION_FEE_TOYOTA = 650;
 export const DISPOSITION_FEE_TOYOTA = 350;
 
-export const WHEN_TAX_ON_MONTHLY_PAYMENT = {
+export const WHEN_TAXED_ON_MONTHLY_PAYMENT = {
   APR: 3,
   OFF_MSRP: 8.7,
   PAYMENT_ZERO_DOWN: 331.84,
@@ -60,7 +51,7 @@ export const DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE = {
   taxMethod: TaxationMethod.TAX_ON_SALES_PRICE,
 };
 
-export const WHEN_TAX_ON_SALES_PRICE = {
+export const WHEN_TAXED_ON_SALES_PRICE = {
   PAYMENT_ZERO_DOWN: 300.99,
   PAYMENT_WITH_DOWN: 266.16,
   MSRP_PERCENTAGE: 1.31,
@@ -79,7 +70,7 @@ export const DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT = {
   taxMethod: TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT,
 };
 
-export const WHEN_TAX_ON_LEASE_PAYMENT = {
+export const WHEN_TAXED_ON_LEASE_PAYMENT = {
   PAYMENT_ZERO_DOWN: 300.99,
   PAYMENT_WITH_DOWN: 266.16,
   MSRP_PERCENTAGE: 1.31,

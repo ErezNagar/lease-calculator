@@ -3,15 +3,15 @@ import {
   // Tax applied on monthly payment
   DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
   DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
-  WHEN_TAX_ON_MONTHLY_PAYMENT,
+  WHEN_TAXED_ON_MONTHLY_PAYMENT,
   // Tax applied on sales price
   DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
   DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE,
-  WHEN_TAX_ON_SALES_PRICE,
+  WHEN_TAXED_ON_SALES_PRICE,
   // Tax applied on total lease payment
   DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
   DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
-  WHEN_TAX_ON_LEASE_PAYMENT,
+  WHEN_TAXED_ON_LEASE_PAYMENT,
   // RV
   DUMMY_LEASE_WITH_PERCENTAGE_RV,
   RV_VALUE,
@@ -121,7 +121,7 @@ describe("LeaseCalculator", () => {
     it("gets correct monthly payment when passed as percentage", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_PERCENTAGE_RV);
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
     });
   });
 
@@ -131,21 +131,21 @@ describe("LeaseCalculator", () => {
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
     });
     it("gets correct monthly payment w/ a down payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_MONTHLY_PAYMENT.PAYMENT_WITH_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_WITH_DOWN);
     });
     it("gets correct discount off msrp", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const offMsrp = leaseCalculator.getDiscountOffMsrpPercentage();
-      expect(offMsrp).toEqual(WHEN_TAX_ON_MONTHLY_PAYMENT.OFF_MSRP);
+      expect(offMsrp).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.OFF_MSRP);
     });
     it("gets correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(
@@ -153,7 +153,7 @@ describe("LeaseCalculator", () => {
       );
       const msrpPercentage = leaseCalculator.getMonthlyPaymentToMsrpPercentage();
       expect(msrpPercentage).toEqual(
-        WHEN_TAX_ON_MONTHLY_PAYMENT.MSRP_PERCENTAGE
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.MSRP_PERCENTAGE
       );
     });
     it("gets correct pre-tax monthly payment", () => {
@@ -162,7 +162,7 @@ describe("LeaseCalculator", () => {
       );
       const paymentPreTax = leaseCalculator.getMonthlyPaymentPreTax();
       expect(paymentPreTax).toEqual(
-        WHEN_TAX_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN_PRE_TAX
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN_PRE_TAX
       );
     });
     it("gets correct APR", () => {
@@ -170,7 +170,7 @@ describe("LeaseCalculator", () => {
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const apr = leaseCalculator.getAPR();
-      expect(apr).toEqual(WHEN_TAX_ON_MONTHLY_PAYMENT.APR);
+      expect(apr).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.APR);
     });
     it("gets correct total lease cost w/ $0 down", () => {
       leaseCalculator.calculate(
@@ -178,7 +178,7 @@ describe("LeaseCalculator", () => {
       );
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN
       );
     });
     it("gets correct total lease cost w/ a down payment", () => {
@@ -187,7 +187,7 @@ describe("LeaseCalculator", () => {
       );
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
       );
     });
   });
@@ -196,26 +196,26 @@ describe("LeaseCalculator", () => {
     it("gets correct monthly payment w/ $0 down", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_SALES_PRICE.PAYMENT_ZERO_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_SALES_PRICE.PAYMENT_ZERO_DOWN);
     });
 
     it("gets correct monthly payment w/ a down payment", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE);
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_SALES_PRICE.PAYMENT_WITH_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_SALES_PRICE.PAYMENT_WITH_DOWN);
     });
 
     it("gets correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const msrpPercentage = leaseCalculator.getMonthlyPaymentToMsrpPercentage();
-      expect(msrpPercentage).toEqual(WHEN_TAX_ON_SALES_PRICE.MSRP_PERCENTAGE);
+      expect(msrpPercentage).toEqual(WHEN_TAXED_ON_SALES_PRICE.MSRP_PERCENTAGE);
     });
 
     it("gets correct total lease cost w/ $0 down", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_SALES_PRICE.TOTAL_LEASE_COST_ZERO_DOWN
+        WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_ZERO_DOWN
       );
     });
 
@@ -223,7 +223,7 @@ describe("LeaseCalculator", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE);
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_SALES_PRICE.TOTAL_LEASE_COST_WITH_DOWN
+        WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_WITH_DOWN
       );
     });
   });
@@ -234,7 +234,7 @@ describe("LeaseCalculator", () => {
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_LEASE_PAYMENT.PAYMENT_ZERO_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_ZERO_DOWN);
     });
 
     it("gets correct monthly payment w/ a down payment", () => {
@@ -242,7 +242,7 @@ describe("LeaseCalculator", () => {
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
-      expect(payment).toEqual(WHEN_TAX_ON_LEASE_PAYMENT.PAYMENT_WITH_DOWN);
+      expect(payment).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_WITH_DOWN);
     });
 
     it("gets correct MSRP percentage (1% rule)", () => {
@@ -250,7 +250,7 @@ describe("LeaseCalculator", () => {
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
       const msrpPercentage = leaseCalculator.getMonthlyPaymentToMsrpPercentage();
-      expect(msrpPercentage).toEqual(WHEN_TAX_ON_LEASE_PAYMENT.MSRP_PERCENTAGE);
+      expect(msrpPercentage).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.MSRP_PERCENTAGE);
     });
 
     it("gets correct total lease cost w/ $0 down", () => {
@@ -259,7 +259,7 @@ describe("LeaseCalculator", () => {
       );
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN
+        WHEN_TAXED_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN
       );
     });
 
@@ -269,7 +269,7 @@ describe("LeaseCalculator", () => {
       );
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
-        WHEN_TAX_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
+        WHEN_TAXED_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
       );
     });
   });
