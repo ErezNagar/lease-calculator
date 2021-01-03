@@ -118,36 +118,36 @@ describe("LeaseCalculator", () => {
       const rv = leaseCalculator.getRVValue();
       expect(rv).toEqual(RV_VALUE);
     });
-    it("gets correct monthly payment when passed as percentage", () => {
+    it("should get correct monthly payment when passed as percentage", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_PERCENTAGE_RV);
       const payment = leaseCalculator.getMonthlyPayment();
       expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
     });
   });
 
-  describe("Tax on monthly payment", () => {
-    it("gets correct monthly payment w/ $0 down", () => {
+  describe("When tax applied on monthly payment", () => {
+    it("should get correct monthly payment w/ $0 down", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
       expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN);
     });
-    it("gets correct monthly payment w/ a down payment", () => {
+    it("should get correct monthly payment w/ a down payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const payment = leaseCalculator.getMonthlyPayment();
       expect(payment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_WITH_DOWN);
     });
-    it("gets correct discount off msrp", () => {
+    it("should get correct discount off msrp", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const offMsrp = leaseCalculator.getDiscountOffMsrpPercentage();
       expect(offMsrp).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.OFF_MSRP);
     });
-    it("gets correct MSRP percentage (1% rule)", () => {
+    it("should get correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
@@ -156,7 +156,7 @@ describe("LeaseCalculator", () => {
         WHEN_TAXED_ON_MONTHLY_PAYMENT.MSRP_PERCENTAGE
       );
     });
-    it("gets correct pre-tax monthly payment", () => {
+    it("should get correct pre-tax monthly payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
@@ -165,14 +165,14 @@ describe("LeaseCalculator", () => {
         WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN_PRE_TAX
       );
     });
-    it("gets correct APR", () => {
+    it("should get correct APR", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
       const apr = leaseCalculator.getAPR();
       expect(apr).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.APR);
     });
-    it("gets correct total lease cost w/ $0 down", () => {
+    it("should get correct total lease cost w/ $0 down", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
@@ -181,7 +181,7 @@ describe("LeaseCalculator", () => {
         WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN
       );
     });
-    it("gets correct total lease cost w/ a down payment", () => {
+    it("should get correct total lease cost w/ a down payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
@@ -190,46 +190,152 @@ describe("LeaseCalculator", () => {
         WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
       );
     });
+    it("should get correct drive-off amount", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+      });
+      const driveoff = leaseCalculator.getDriveOffPayment();
+      expect(driveoff).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.DRIVEOFF_AMOUNT);
+    });
+    it("should get correct monthly payment pre-tax when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const monthlyPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(monthlyPreTax).toEqual(
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF_PRE_TAX
+      );
+    });
+    it("should get correct monthly payment when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      expect(monthlyPayment).toEqual(
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
+    it("should get correct total lease cost when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const totalCost = leaseCalculator.getTotalLeaseCost();
+      expect(totalCost).toEqual(
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
+    it("should have zero drive-off amount when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const driveOffPayment = leaseCalculator.getDriveOffPayment();
+      expect(driveOffPayment).toEqual(0);
+    });
   });
 
-  describe("Tax on sales price", () => {
-    it("gets correct monthly payment w/ $0 down", () => {
+  describe("When tax applied on sales price", () => {
+    it("should get correct monthly payment w/ $0 down", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const payment = leaseCalculator.getMonthlyPayment();
       expect(payment).toEqual(WHEN_TAXED_ON_SALES_PRICE.PAYMENT_ZERO_DOWN);
     });
 
-    it("gets correct monthly payment w/ a down payment", () => {
+    it("should get correct monthly payment w/ a down payment", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE);
       const payment = leaseCalculator.getMonthlyPayment();
       expect(payment).toEqual(WHEN_TAXED_ON_SALES_PRICE.PAYMENT_WITH_DOWN);
     });
 
-    it("gets correct MSRP percentage (1% rule)", () => {
+    it("total monthly payment should match monthly payment pre tax", () => {
+      leaseCalculator.calculate(DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE);
+      const paymentPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      const payment = leaseCalculator.getMonthlyPayment();
+      expect(payment).toEqual(paymentPreTax);
+    });
+
+    it("should get correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const msrpPercentage = leaseCalculator.getMonthlyPaymentToMsrpPercentage();
       expect(msrpPercentage).toEqual(WHEN_TAXED_ON_SALES_PRICE.MSRP_PERCENTAGE);
     });
 
-    it("gets correct total lease cost w/ $0 down", () => {
+    it("should get correct total lease cost w/ $0 down", () => {
       leaseCalculator.calculate(DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE);
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
         WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_ZERO_DOWN
       );
     });
-
-    it("gets correct total lease cost w/ a down payment", () => {
+    it("should get correct total lease cost w/ a down payment", () => {
       leaseCalculator.calculate(DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_SALES_PRICE);
       const totalCost = leaseCalculator.getTotalLeaseCost();
       expect(totalCost).toEqual(
         WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_WITH_DOWN
       );
     });
+    it("should get correct drive-off amount", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+        totalFees: 0,
+        rebates: 0,
+      });
+      const driveoff = leaseCalculator.getDriveOffPayment();
+      expect(driveoff).toEqual(WHEN_TAXED_ON_SALES_PRICE.DRIVEOFF_AMOUNT);
+    });
+    it("should get correct monthly payment pre-tax when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const monthlyPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(monthlyPreTax).toEqual(
+        WHEN_TAXED_ON_SALES_PRICE.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF_PRE_TAX
+      );
+    });
+    it("should get correct monthly payment when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      expect(monthlyPayment).toEqual(
+        WHEN_TAXED_ON_SALES_PRICE.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
+    it("should get correct total lease cost when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const totalCost = leaseCalculator.getTotalLeaseCost();
+      expect(totalCost).toEqual(
+        WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
   });
 
-  describe("Tax on total lease payment", () => {
-    it("gets correct monthly payment w/ $0 down", () => {
+  describe("When tax applied on total lease payment", () => {
+    it("should get correct monthly payment w/ $0 down", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
@@ -237,7 +343,7 @@ describe("LeaseCalculator", () => {
       expect(payment).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_ZERO_DOWN);
     });
 
-    it("gets correct monthly payment w/ a down payment", () => {
+    it("should get correct monthly payment w/ a down payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
@@ -245,15 +351,26 @@ describe("LeaseCalculator", () => {
       expect(payment).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_WITH_DOWN);
     });
 
-    it("gets correct MSRP percentage (1% rule)", () => {
+    it("total monthly payment should match monthly payment pre tax", () => {
+      leaseCalculator.calculate(
+        DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
+      );
+      const paymentPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      const payment = leaseCalculator.getMonthlyPayment();
+      expect(payment).toEqual(paymentPreTax);
+    });
+
+    it("should get correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
       const msrpPercentage = leaseCalculator.getMonthlyPaymentToMsrpPercentage();
-      expect(msrpPercentage).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.MSRP_PERCENTAGE);
+      expect(msrpPercentage).toEqual(
+        WHEN_TAXED_ON_LEASE_PAYMENT.MSRP_PERCENTAGE
+      );
     });
 
-    it("gets correct total lease cost w/ $0 down", () => {
+    it("should get correct total lease cost w/ $0 down", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
@@ -263,7 +380,7 @@ describe("LeaseCalculator", () => {
       );
     });
 
-    it("gets correct total lease cost w/ a down payment", () => {
+    it("should get correct total lease cost w/ a down payment", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_LEASE_PAYMENT
       );
@@ -271,6 +388,103 @@ describe("LeaseCalculator", () => {
       expect(totalCost).toEqual(
         WHEN_TAXED_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_WITH_DOWN
       );
+    });
+    it("should get correct drive-off amount", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+      });
+      const driveoff = leaseCalculator.getDriveOffPayment();
+      expect(driveoff).toEqual(WHEN_TAXED_ON_LEASE_PAYMENT.DRIVEOFF_AMOUNT);
+    });
+    it("should get correct monthly payment pre-tax when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const payment = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(payment).toEqual(
+        WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF_PRE_TAX
+      );
+    });
+    it("should get correct monthly payment when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const payment = leaseCalculator.getMonthlyPayment();
+      expect(payment).toEqual(
+        WHEN_TAXED_ON_LEASE_PAYMENT.PAYMENT_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
+    it("should get correct total lease cost when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_LEASE_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const totalCost = leaseCalculator.getTotalLeaseCost();
+      expect(totalCost).toEqual(
+        WHEN_TAXED_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
+      );
+    });
+  });
+
+  describe("Drive off amount", () => {
+    it("should be the correct non-zero amount by default", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+      });
+      const driveOffPayment = leaseCalculator.getDriveOffPayment();
+      expect(driveOffPayment).toEqual(
+        WHEN_TAXED_ON_MONTHLY_PAYMENT.DRIVEOFF_AMOUNT
+      );
+    });
+    it("should include all payments and taxes", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+      });
+
+      const acqFee = leaseCalculator.getAcquisitionFee();
+      const downPayment = 0;
+      const totalFees = 0;
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      const taxAmount =
+        (acqFee + downPayment + totalFees) *
+        (DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT.salesTax / 100);
+
+      const driveOffPayment = leaseCalculator.getDriveOffPayment();
+      expect(driveOffPayment).toEqual(
+        Number.parseFloat(
+          (
+            acqFee +
+            downPayment +
+            totalFees +
+            monthlyPayment +
+            taxAmount
+          ).toFixed(2)
+        )
+      );
+    });
+    it("should be zero when zero drive-off", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        totalFees: 0,
+        rebates: 0,
+        isZeroDriveoff: true,
+      });
+      const driveOffPayment = leaseCalculator.getDriveOffPayment();
+      expect(driveOffPayment).toEqual(0);
     });
   });
 });
