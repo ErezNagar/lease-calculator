@@ -11,7 +11,6 @@ type LeaseValues = {
   salesTax: number;
   totalFees: number;
   rebates: number;
-  tradeIn: number;
   downPayment: number;
   taxMethod: TaxationMethod;
   isZeroDriveoff: boolean;
@@ -80,7 +79,6 @@ class LeaseCalculator {
     salesTax       The state's sales tax in percentage.
     totalFees      Total fees of the lease
     rebates        Total discount from dealer and manufacturer
-    tradeIn        Total trade-in value
     downPayment    Down payment, if applicable
     taxMethod      Method of taxation to apply, based on state
     isZeroDriveoff Whether fees & tax are capitalized
@@ -96,7 +94,6 @@ class LeaseCalculator {
     salesTax = 0,
     totalFees = 0,
     rebates = 0,
-    tradeIn = 0,
     downPayment = 0,
     taxMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT,
     isZeroDriveoff = false,
@@ -111,7 +108,6 @@ class LeaseCalculator {
     this.salesTax = salesTax;
     this.totalFees = totalFees;
     this.rebates = rebates;
-    this.tradeIn = tradeIn;
     this.downPayment = downPayment;
     this.taxMethod = taxMethod;
     this.isZeroDriveoff = isZeroDriveoff;
@@ -125,9 +121,7 @@ class LeaseCalculator {
       (this.isZeroDriveoff ? this.getAcquisitionFee() : 0);
 
     const capCostReduction =
-      this.rebates +
-      this.tradeIn +
-      (this.isZeroDriveoff ? 0 : this.downPayment);
+      this.rebates + (this.isZeroDriveoff ? 0 : this.downPayment);
 
     this._netCapCost = grossCapCost - capCostReduction;
     this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax();

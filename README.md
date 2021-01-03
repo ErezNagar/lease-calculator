@@ -71,9 +71,6 @@ Total fees of the lease
 rebates: number = 0,
 Total discount from dealer and manufacturer
 
-tradeIn: number = 0,
-Total trade-in value
-
 downPayment: number = 0,
 Down payment, if applicable
 
