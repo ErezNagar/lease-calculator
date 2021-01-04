@@ -8,6 +8,15 @@ A simple auto lease calculator for calculating your monthly lease payment, APR, 
 
 See it used in the Auto Lease app: https://github.com/ErezNagar/lease-calculator-app
 
+## Features
+
+- Calculates car lease payments including total monthly payment, monthly payment pre-tax, total lease cost, APR, percentage off MSRP and drive-off fees.
+- Supports all state-based method of taxation
+- Includes acquisition fee for supported manufacturers
+- Includes disposition fee for supported manufacturers
+- Supports zero down payment
+- Supports zero drive-off payments
+
 ## How To Use
 
 ```bash
@@ -33,66 +42,96 @@ const monthlyPayment = leaseCalculator.getMonthlyPayment();
 
 ## API
 
-|                                        | Description                                                                                                                       |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `calculate(leaseValues: Object): void` | Main function to calculate lease payments. Must be run prior to any other function in order to first calculate the lease numbers. |
+### `calculate(leaseValues: Object): void`
+
+Main function to calculate lease payments. Must be run prior to any other function in order to first calculate the lease numbers.
 
 Arguments:
 leaseValues Object, with the following attributes:
 
-make: string = ""
+`make: string = ""`
 Make of the vehicle, for calculating manufacturer-based fees.
 
-msrp: number
+`msrp: number`
 Required, MSRP of the vehicle
 
-sellingPrice: number,
+`sellingPrice: number`
 Required, negotiated price of the vehicle
 
-rv: number,
+`rv: number`
 Required, residual value of the vehicle
 If isRVPercent is true, value must be a percentage, e.g., if RV is 65%, rv should be 65.
 
-isRVPercent: boolean = true,
+`isRVPercent: boolean = true`
 Whether the RV is an absolute value or a percentage of MSRP
 
-mf: number,
+`mf: number`
 Required, the money factor of the lease (e.g. 0.00125)
 
-leaseTerm: number = 36,
+`leaseTerm: number = 36`
 The length of the lease in months
 
-salesTax: number = 0,
+`salesTax: number = 0`
 The state's sales tax in percentage
 
-totalFees: number = 0,
+`totalFees: number = 0`
 Total fees of the lease
 
-rebates: number = 0,
+`rebates: number = 0`
 Total discount from dealer and manufacturer
 
-downPayment: number = 0,
+`downPayment: number = 0`
 Down payment, if applicable
 
-taxMethod: TaxationMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT,
+`taxMethod: TaxationMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT`
 Method of taxation to apply, based on state
 
-isZeroDriveoff: boolean = false,
-Added in v1.3.0. Whether the lease should be calculated with zero drive-off amount. If true, all fees and taxes are rolled into the monthly payment. |
+`isZeroDriveoff: boolean = false`
+Added in v1.3.0. Whether the lease should be calculated with zero drive-off amount. If true, all fees and taxes are rolled into the monthly payment.
 
-|                                               |                                                                                                                                                    |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getRVValue(): number`                        | Gets the residual value of the lease                                                                                                               |
-| `getRVPercentage(): number`                   | Gets the residual value of the lease in percentage                                                                                                 |
-| `getMonthlyPaymentPreTax(): number`           | Gets the monthly payment of the lease, not including taxes                                                                                         |
-| `getMonthlyPayment(): number`                 | Gets the monthly payment of the lease, including taxes                                                                                             |
-| `getDiscountOffMsrpPercentage(): number`      | Gets the discount off of MSRP, in percentage                                                                                                       |
-| `getMonthlyPaymentToMsrpPercentage(): number` | Gets the percentage of the monthly payment out of the MSRP                                                                                         |
-| `getTotalLeaseCost(): number`                 | Gets the total cost of the lease. This includes all monthly payments, down payment, disposition fee, acquisition fee, dealer fees and lease taxes. |
-| `getAPR()`                                    | Gets the APR value of the lease                                                                                                                    |
-| `getAcquisitionFee(): number`                 | Gets the acquisition fee value by brand. If no brand sepcified, returns 0                                                                          |
-| `getDispositionFee(): number`                 | Gets the disposition fee value by brand. If no brand sepcified, returns 0                                                                          |
-| `getDriveOffPayment(): number`                | Gets total drive-off payment                                                                                                                       |
+### `getRVValue(): number`
+
+Gets the residual value of the lease
+
+### `getRVPercentage(): number`
+
+Gets the residual value of the lease in percentage
+
+### `getMonthlyPaymentPreTax(): number`
+
+Gets the monthly payment of the lease, not including taxes
+
+### `getMonthlyPayment(): number`
+
+Gets the monthly payment of the lease, including taxes
+
+### `getDiscountOffMsrpPercentage(): number`
+
+Gets the discount off of MSRP, in percentage
+
+### `getMonthlyPaymentToMsrpPercentage(): number`
+
+Gets the percentage of the monthly payment out of the MSRP
+
+### `getTotalLeaseCost(): number`
+
+Gets the total cost of the lease. This includes all monthly payments, down payment, disposition fee, acquisition fee, dealer fees and lease taxes.
+
+### `getAPR()`
+
+Gets the APR value of the lease
+
+### `getAcquisitionFee(): number`
+
+Gets the acquisition fee value by brand. If no brand sepcified, returns 0
+
+### `getDispositionFee(): number`
+
+Gets the disposition fee value by brand. If no brand sepcified, returns 0
+
+### `getDriveOffPayment(): number`
+
+Gets total drive-off payment
 
 ## Supported manufacturers
 
