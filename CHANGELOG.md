@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [2.0.0](https://github.com/ErezNagar/lease-calculator/compare/v1.2.2...v2.0.0) - 2/1/2021
+## [2.0.0](https://github.com/ErezNagar/lease-calculator/compare/v1.2.2...v2.0.0) - 3/1/2021
 
 ### Added
 
@@ -15,10 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Acquisition fee is no longer capitalized by default
 - Acquisition fee and disposition fee are included in drive-off payment when taxMethod = TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT
+- Total fees and rebates calculation
 
 ### Removed
 
-- Support for trade-in
+- Support for trade-in value
 
 ## [1.2.1](https://github.com/ErezNagar/lease-calculator/compare/v1.2.0...v1.2.1) - 8/11/2020
 

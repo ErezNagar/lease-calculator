@@ -117,8 +117,7 @@ class LeaseCalculator {
 
     const grossCapCost =
       this.sellingPrice +
-      this.totalFees +
-      (this.isZeroDriveoff ? this.getAcquisitionFee() : 0);
+      (this.isZeroDriveoff ? this.totalFees + this.getAcquisitionFee() : 0);
 
     const capCostReduction =
       this.rebates + (this.isZeroDriveoff ? 0 : this.downPayment);
@@ -126,22 +125,6 @@ class LeaseCalculator {
     this._netCapCost = grossCapCost - capCostReduction;
     this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax();
     this.monthlyPayment = this.calculateMonthlyPaymentWithTax();
-  }
-
-  /*
-    Calculates total monthly payment based on method of taxation
-  */
-  calculateMonthlyPaymentWithTax(): number {
-    const tax = this.calculateTax();
-    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
-      return this.monthlyPaymentPreTax + tax;
-    }
-
-    if (this.isZeroDriveoff) {
-      // Capitalize the tax amount to account for zero drive-off
-      this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(tax);
-    }
-    return this.monthlyPaymentPreTax;
   }
 
   /*
@@ -158,12 +141,33 @@ class LeaseCalculator {
   }
 
   /*
+    Calculates total monthly payment based on method of taxation
+  */
+  calculateMonthlyPaymentWithTax(): number {
+    const tax = this.calculateTax();
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
+      if (this.isZeroDriveoff) {
+        this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(tax);
+        return this.monthlyPaymentPreTax * (1 + this.salesTax / 100);
+      }
+      return this.monthlyPaymentPreTax + tax;
+    }
+
+    if (this.isZeroDriveoff) {
+      // Capitalize the tax amount to account for zero drive-off
+      this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(tax);
+    }
+    return this.monthlyPaymentPreTax;
+  }
+
+  /*
     Calculates the lease tax amount based on method of taxation
   */
   calculateTax(): number {
     let taxableAmount;
     if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
-      taxableAmount = this.monthlyPaymentPreTax;
+      taxableAmount =
+        this.monthlyPaymentPreTax + (this.isZeroDriveoff ? this.rebates : 0);
     } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
       taxableAmount = this.sellingPrice;
     } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
@@ -180,13 +184,16 @@ class LeaseCalculator {
 
   /*
     Calculates tax amount on drive off payment.
-    Applicable when isZeroDriveoff off is false
+    Applicable when isZeroDriveoff is false
   */
   calculateDriveOffTaxes(): number {
     let taxableAmount;
     if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
       taxableAmount =
-        this.downPayment + this.totalFees + this.getAcquisitionFee();
+        this.downPayment +
+        this.totalFees +
+        this.rebates +
+        this.getAcquisitionFee();
     } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
       taxableAmount = this.sellingPrice;
     } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
@@ -194,6 +201,7 @@ class LeaseCalculator {
         this.monthlyPaymentPreTax * this.leaseTerm +
         this.downPayment +
         this.totalFees +
+        this.rebates +
         this.getAcquisitionFee() +
         this.getDispositionFee();
     }
