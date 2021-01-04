@@ -11,7 +11,7 @@ See it used in the Auto Lease app: https://github.com/ErezNagar/lease-calculator
 ## Features
 
 - Calculates car lease payments including total monthly payment, monthly payment pre-tax, total lease cost, APR, percentage off MSRP and drive-off fees.
-- Supports all state-based method of taxation
+- Supports methods of taxation by state
 - Includes acquisition fee for supported manufacturers
 - Includes disposition fee for supported manufacturers
 - Supports zero down payment
@@ -66,6 +66,7 @@ If isRVPercent is true, value must be a percentage, e.g., if RV is 65%, rv shoul
 Whether the RV is an absolute value or a percentage of MSRP
 
 `mf: number`
+
 Required, the money factor of the lease (e.g. 0.00125)
 
 `leaseTerm: number = 36`
