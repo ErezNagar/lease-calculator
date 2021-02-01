@@ -49,58 +49,44 @@ Main function to calculate lease payments. Must be run prior to any other functi
 Arguments:
 leaseValues Object, with the following attributes:
 
-`make: string = ""`
+- `make: string = ""`
+  Make of the vehicle, for calculating manufacturer-based fees.
 
-Make of the vehicle, for calculating manufacturer-based fees.
+- `msrp: number`
+  Required, MSRP of the vehicle
 
-`msrp: number`
+- `sellingPrice: number`
+  Required, negotiated price of the vehicle
 
-Required, MSRP of the vehicle
+- `rv: number`
+  Required, residual value of the vehicle. If isRVPercent is true, value must be a percentage, e.g., if RV is 65%, rv should be 65.
 
-`sellingPrice: number`
+- `isRVPercent: boolean = true`
+  Whether the RV is an absolute value or a percentage of MSRP
 
-Required, negotiated price of the vehicle
+- `mf: number`
+  Required, the money factor of the lease (e.g. 0.00125)
 
-`rv: number`
+- `leaseTerm: number = 36`
+  The length of the lease in months
 
-Required, residual value of the vehicle
-If isRVPercent is true, value must be a percentage, e.g., if RV is 65%, rv should be 65.
+- `salesTax: number = 0`
+  The state's sales tax in percentage
 
-`isRVPercent: boolean = true`
+- `totalFees: number = 0`
+  Total fees of the lease
 
-Whether the RV is an absolute value or a percentage of MSRP
+- `rebates: number = 0`
+  Total discount from dealer and manufacturer
 
-`mf: number`
+- `downPayment: number = 0`
+  Down payment, if applicable
 
-Required, the money factor of the lease (e.g. 0.00125)
+- `taxMethod: TaxationMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT`
+  Method of taxation to apply, based on state
 
-`leaseTerm: number = 36`
-
-The length of the lease in months
-
-`salesTax: number = 0`
-
-The state's sales tax in percentage
-
-`totalFees: number = 0`
-
-Total fees of the lease
-
-`rebates: number = 0`
-
-Total discount from dealer and manufacturer
-
-`downPayment: number = 0`
-
-Down payment, if applicable
-
-`taxMethod: TaxationMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT`
-
-Method of taxation to apply, based on state
-
-`isZeroDriveoff: boolean = false`
-
-Added in v1.3.0. Whether the lease should be calculated with zero drive-off amount. If true, all fees and taxes are rolled into the monthly payment.
+- `isZeroDriveoff: boolean = false`
+  Added in v1.3.0. Whether the lease should be calculated with zero drive-off amount. If true, all fees and taxes are rolled into the monthly payment.
 
 ### `getMonthlyPayment(): number`
 
@@ -145,6 +131,30 @@ Gets the residual value of the lease
 ### `getRVPercentage(): number`
 
 Gets the residual value of the lease in percentage
+
+### `getDepreciation(): number`
+
+Gets the total depreciation value of the lease. Added in v2.1.0.
+
+### `getBaseMonthlyPayment(): number`
+
+Gets the base monthly payment. Added in v2.1.0.
+
+### `getRentCharge(): number`
+
+Gets the rent charge value. Added in v2.1.0.
+
+### `getTotalInterest(): number`
+
+Gets total interest for the lease. Added in v2.1.0.
+
+### `getMonthlyTax(): number`
+
+Gets the monthly tax value. Applicable on for taxatino method is TAX_ON_MONTHLY_PAYMENT. Otherwise, returns 0. Added in v2.1.0.
+
+### `getTotalTax(): number`
+
+Gets the total tax for the lease. Added in v2.1.0.
 
 ## Supported manufacturers
 

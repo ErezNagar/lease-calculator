@@ -23,6 +23,10 @@ interface LeaseCalculator extends LeaseValues {
   monthlyPaymentPreTax: number;
   monthlyPayment: number;
   _netCapCost: number;
+  depreciation: number;
+  basePayment: number;
+  rentCharge: number;
+  tax: number;
 }
 
 class LeaseCalculator {
@@ -132,30 +136,32 @@ class LeaseCalculator {
   */
   calculateMonthlyPaymentPreTax(capAddon: number = 0): number {
     this._netCapCost += capAddon;
-    const depreciation = this._netCapCost - this.RVValue;
-    const basePayment =
-      depreciation /
+    this.depreciation = this._netCapCost - this.RVValue;
+    this.basePayment =
+      this.depreciation /
       (this.isZeroDriveoff ? this.leaseTerm - 1 : this.leaseTerm);
-    const rentCharge = (this._netCapCost + this.RVValue) * this.mf;
-    return basePayment + rentCharge;
+    this.rentCharge = (this._netCapCost + this.RVValue) * this.mf;
+    return this.basePayment + this.rentCharge;
   }
 
   /*
     Calculates total monthly payment based on method of taxation
   */
   calculateMonthlyPaymentWithTax(): number {
-    const tax = this.calculateTax();
+    this.tax = this.calculateTax();
     if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
       if (this.isZeroDriveoff) {
-        this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(tax);
+        this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(
+          this.tax
+        );
         return this.monthlyPaymentPreTax * (1 + this.salesTax / 100);
       }
-      return this.monthlyPaymentPreTax + tax;
+      return this.monthlyPaymentPreTax + this.tax;
     }
 
     if (this.isZeroDriveoff) {
       // Capitalize the tax amount to account for zero drive-off
-      this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(tax);
+      this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(this.tax);
     }
     return this.monthlyPaymentPreTax;
   }
@@ -312,6 +318,55 @@ class LeaseCalculator {
         this.getAcquisitionFee();
 
     return Math.round(driveoff * 100) / 100;
+  }
+
+  /*
+    Gets total depreciation value
+  */
+  getDepreciation(): number {
+    return this.depreciation;
+  }
+
+  /*
+    Gets the base monthly payment
+  */
+  getBaseMonthlyPayment(): number {
+    return Math.round(this.basePayment * 100) / 100;
+  }
+
+  /*
+    Gets the rent charge value ("monthly MF")
+  */
+  getRentCharge(): number {
+    return Math.round(this.rentCharge * 100) / 100;
+  }
+
+  /*
+    Gets total interest for the lease
+  */
+  getTotalInterest(): number {
+    return Math.round(this.rentCharge * this.leaseTerm * 100) / 100;
+  }
+
+  /*
+    Gets the monthly tax value. Applicable on for taxatino method is TAX_ON_MONTHLY_PAYMENT.
+    Otherwise, returns 0.
+  */
+  getMonthlyTax(): number {
+    return this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
+      ? Math.round(this.tax * 100) / 100
+      : 0;
+  }
+
+  /*
+    Gets the total tax for the lease
+  */
+  getTotalTax(): number {
+    return this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
+      ? Math.round(
+          (this.tax * this.leaseTerm + this.calculateDriveOffTaxes()) * 100
+        ) / 100
+      : this.calculateDriveOffTaxes();
   }
 }
 

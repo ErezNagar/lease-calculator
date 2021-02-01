@@ -227,6 +227,61 @@ describe("LeaseCalculator", () => {
         WHEN_TAXED_ON_MONTHLY_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
       );
     });
+    it("should have all base payments equal depreciation", () => {
+      const { leaseTerm } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      const depreciation = leaseCalculator.getDepreciation();
+      expect(Math.round(basePayment * leaseTerm)).toEqual(depreciation);
+    });
+    it("should get the correct base payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      expect(basePayment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.BASE_PAYMENT);
+    });
+    it("should get the correct rent charge", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const rentCharge = leaseCalculator.getRentCharge();
+      expect(rentCharge).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.RENT_CHARGE);
+    });
+    it("should have base payment plus rent charge equal monthly payment pre-tax", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge();
+      const monthlyPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPreTax);
+    });
+    it("should have base payment plus rent charge & tax equal monthly payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge() +
+        leaseCalculator.getMonthlyTax();
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPayment);
+    });
+    it("should have total taxes equal to monthly tax plus drive off taxes", () => {
+      const { leaseTerm } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+      });
+      const value =
+        leaseCalculator.getMonthlyTax() * leaseTerm +
+        leaseCalculator.calculateDriveOffTaxes();
+      const totalTaxes = Math.round(leaseCalculator.getTotalTax());
+      expect(Math.round(value)).toEqual(totalTaxes);
+    });
   });
 
   describe("When tax applied on sales price", () => {
@@ -303,6 +358,67 @@ describe("LeaseCalculator", () => {
       expect(totalCost).toEqual(
         WHEN_TAXED_ON_SALES_PRICE.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
       );
+    });
+    it("should have all base payments equal depreciation", () => {
+      const { leaseTerm } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      const depreciation = leaseCalculator.getDepreciation();
+      expect(Math.round(basePayment * leaseTerm)).toEqual(depreciation);
+    });
+    it("should get the correct base payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      expect(basePayment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.BASE_PAYMENT);
+    });
+    it("should get the correct rent charge", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const rentCharge = leaseCalculator.getRentCharge();
+      expect(rentCharge).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.RENT_CHARGE);
+    });
+    it("should have base payment plus rent charge equal monthly payment pre-tax", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge();
+      const monthlyPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPreTax);
+    });
+    it("should have base payment plus rent charge equal monthly payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge();
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPayment);
+    });
+    it("should have 0 monthly tax", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      expect(leaseCalculator.getMonthlyTax()).toEqual(0);
+    });
+    it("should have total taxes equal to the sales price on Selling Price", () => {
+      const {
+        salesTax,
+        sellingPrice,
+      } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const tax = (salesTax / 100) * sellingPrice;
+      const totalTaxes = Math.round(leaseCalculator.getTotalTax());
+      expect(Math.round(tax)).toEqual(totalTaxes);
     });
   });
 
@@ -397,6 +513,67 @@ describe("LeaseCalculator", () => {
       expect(totalCost).toEqual(
         WHEN_TAXED_ON_LEASE_PAYMENT.TOTAL_LEASE_COST_ZERO_DOWN_ZERO_DRIVEOFF
       );
+    });
+    it("should have all base payments equal depreciation", () => {
+      const { leaseTerm } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      const depreciation = leaseCalculator.getDepreciation();
+      expect(Math.round(basePayment * leaseTerm)).toEqual(depreciation);
+    });
+    it("should get the correct base payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const basePayment = leaseCalculator.getBaseMonthlyPayment();
+      expect(basePayment).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.BASE_PAYMENT);
+    });
+    it("should get the correct rent charge", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const rentCharge = leaseCalculator.getRentCharge();
+      expect(rentCharge).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.RENT_CHARGE);
+    });
+    it("should have base payment plus rent charge equal monthly payment pre-tax", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge();
+      const monthlyPreTax = leaseCalculator.getMonthlyPaymentPreTax();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPreTax);
+    });
+    it("should have base payment plus rent charge equal monthly payment", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const value =
+        leaseCalculator.getBaseMonthlyPayment() +
+        leaseCalculator.getRentCharge();
+      const monthlyPayment = leaseCalculator.getMonthlyPayment();
+      expect(Math.round(value * 100) / 100).toEqual(monthlyPayment);
+    });
+    it("should have 0 monthly tax", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      expect(leaseCalculator.getMonthlyTax()).toEqual(0);
+    });
+    it("should have total taxes equal to the sales price on Selling Price", () => {
+      const {
+        salesTax,
+        sellingPrice,
+      } = DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE;
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_SALES_PRICE,
+      });
+      const tax = (salesTax / 100) * sellingPrice;
+      const totalTaxes = Math.round(leaseCalculator.getTotalTax());
+      expect(Math.round(tax)).toEqual(totalTaxes);
     });
   });
 
