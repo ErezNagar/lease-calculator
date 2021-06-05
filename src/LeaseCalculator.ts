@@ -321,6 +321,51 @@ class LeaseCalculator {
   }
 
   /*
+    Returns a detailed list of all drive-off payments.
+    Returns null if isZeroDriveoff is true.
+  */
+  getDriveOffPaymentDetails(): Array<any> | null {
+    if (this.isZeroDriveoff) {
+      return null;
+    }
+    const details = [
+      {
+        type: "taxes",
+        label: "Taxes",
+        amount: Math.round(this.calculateDriveOffTaxes() * 100) / 100,
+      },
+      {
+        type: "firstMonth",
+        label: "First month",
+        amount: Math.round(this.monthlyPayment * 100) / 100,
+      },
+      {
+        type: "acquisitionFee",
+        label: "Acquisition Fee",
+        amount: this.getAcquisitionFee(),
+      },
+    ];
+
+    if (this.downPayment) {
+      details.push({
+        type: "downPayment",
+        label: "Down Payment",
+        amount: this.downPayment,
+      });
+    }
+
+    if (this.totalFees) {
+      details.push({
+        type: "totalFees",
+        label: "Dealer & Government Fees",
+        amount: this.totalFees,
+      });
+    }
+
+    return details;
+  }
+
+  /*
     Gets total depreciation value
   */
   getDepreciation(): number {
