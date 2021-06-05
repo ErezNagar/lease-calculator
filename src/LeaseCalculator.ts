@@ -324,7 +324,7 @@ class LeaseCalculator {
     Returns a detailed list of all drive-off payments.
     Returns null if isZeroDriveoff is true.
   */
-  getDriveOffPaymentDetails(): Array<any> | null {
+  getDriveOffPaymentDetails(): object[] | null {
     if (this.isZeroDriveoff) {
       return null;
     }
