@@ -394,7 +394,7 @@ class LeaseCalculator {
   }
 
   /*
-    Gets the monthly tax value. Applicable on for taxatino method is TAX_ON_MONTHLY_PAYMENT.
+    Gets the monthly tax value. Applicable only when taxation method is TAX_ON_MONTHLY_PAYMENT.
     Otherwise, returns 0.
   */
   getMonthlyTax(): number {
