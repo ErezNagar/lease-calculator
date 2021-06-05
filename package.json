@@ -19,7 +19,7 @@
     "build": "tsc",
     "test": "jest --config jestconfig.json",
     "lint": "tslint -p tsconfig.json",
-    "preversion": "npm run lint && npm test",
+    "preversion": "npm run lint",
     "version": "npm run build && git add *",
     "postversion": "git push && git push --tags && rm -rf build",
     "prepublishOnly": "npm test && npm run lint"
