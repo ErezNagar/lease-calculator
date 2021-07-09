@@ -147,6 +147,23 @@ describe("LeaseCalculator", () => {
       const offMsrp = leaseCalculator.getDiscountOffMsrpPercentage();
       expect(offMsrp).toEqual(WHEN_TAXED_ON_MONTHLY_PAYMENT.OFF_MSRP);
     });
+    it("Off msrp should be null when Selling Price equals MSRP", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        sellingPrice: DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT.msrp,
+      });
+      const offMsrp = leaseCalculator.getDiscountOffMsrpPercentage();
+      expect(offMsrp).toBeNull();
+    });
+    it("Off msrp should be null when Selling Price > MSRP", () => {
+      leaseCalculator.calculate({
+        ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
+        sellingPrice:
+          DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT.msrp + 1,
+      });
+      const offMsrp = leaseCalculator.getDiscountOffMsrpPercentage();
+      expect(offMsrp).toBeNull();
+    });
     it("should get correct MSRP percentage (1% rule)", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT

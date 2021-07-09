@@ -244,12 +244,15 @@ class LeaseCalculator {
   }
 
   /*
-    Gets the discount off of the MSRP, in percentage
+    Gets the discount off of the MSRP, in percentage.
+    Returns null if Selling Price >= MSRP
   */
-  getDiscountOffMsrpPercentage(): number {
+  getDiscountOffMsrpPercentage(): number | null {
     const offMsrp = this.msrp - this.sellingPrice;
     const offMsrpPercentage = (offMsrp / this.msrp) * 100;
-    return Math.round(offMsrpPercentage * 100) / 100;
+    return offMsrpPercentage <= 0
+      ? null
+      : Math.round(offMsrpPercentage * 100) / 100;
   }
 
   /*
