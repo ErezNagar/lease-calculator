@@ -250,9 +250,8 @@ class LeaseCalculator {
   getDiscountOffMsrpPercentage(): number | null {
     const offMsrp = this.msrp - this.sellingPrice;
     const offMsrpPercentage = (offMsrp / this.msrp) * 100;
-    return offMsrpPercentage <= 0
-      ? null
-      : Math.round(offMsrpPercentage * 100) / 100;
+    const offMsrpPercentageRound = Math.round(offMsrpPercentage * 100) / 100;
+    return offMsrpPercentageRound <= 0 ? null : offMsrpPercentageRound;
   }
 
   /*
