@@ -323,14 +323,14 @@ class LeaseCalculator {
   }
 
   /*
-    Returns a detailed list of all drive-off payments.
+    Returns a list of all drive-off payments.
     Returns null if isZeroDriveoff is true.
   */
-  getDriveOffPaymentDetails(): object[] | null {
+  getDriveOffPaymentBreakdown(): object[] | null {
     if (this.isZeroDriveoff) {
       return null;
     }
-    const details = [
+    const payments = [
       {
         type: "taxes",
         label: "Taxes",
@@ -349,7 +349,7 @@ class LeaseCalculator {
     ];
 
     if (this.downPayment) {
-      details.push({
+      payments.push({
         type: "downPayment",
         label: "Down Payment",
         amount: this.downPayment,
@@ -357,14 +357,14 @@ class LeaseCalculator {
     }
 
     if (this.totalFees) {
-      details.push({
+      payments.push({
         type: "totalFees",
         label: "Dealer & Government Fees",
         amount: this.totalFees,
       });
     }
 
-    return details;
+    return payments;
   }
 
   /*

@@ -156,9 +156,9 @@ Gets the monthly tax value. Applicable on for taxatino method is TAX_ON_MONTHLY_
 
 Gets the total tax for the lease. Added in v2.1.0.
 
-### `getDriveOffPaymentDetails(): object[] | null`
+### `getDriveOffPaymentBreakdown(): object[] | null`
 
-Returns a detailed list of all drive-off payments. Returns null if isZeroDriveoff is true.
+Returns a list of all drive-off payments. Returns null if isZeroDriveoff is true.
 
 ## Supported manufacturers
 
