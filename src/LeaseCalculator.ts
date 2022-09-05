@@ -1,6 +1,6 @@
 import { TaxationMethod, MAKES } from "./constants";
 
-type LeaseValues = {
+type LeaseParams = {
   make: string;
   msrp: number;
   sellingPrice: number;
@@ -16,7 +16,20 @@ type LeaseValues = {
   isZeroDriveoff: boolean;
 };
 
-interface LeaseCalculator extends LeaseValues {
+type FinanceParams = {
+  make: string;
+  sellingPrice: number;
+  salesTax: number;
+  rebates: number;
+  downPayment: number;
+  taxableFees: number;
+  untaxableFees: number;
+  APR: number;
+  financeTerm: number;
+  tradeIn: number;
+};
+
+interface LeaseCalculator extends LeaseParams, FinanceParams {
   RVValue: number;
   RVPercent: number;
   apr: number;
@@ -27,24 +40,46 @@ interface LeaseCalculator extends LeaseValues {
   basePayment: number;
   rentCharge: number;
   tax: number;
+  finance: FinanceParams;
+  financeMonthlyPayment: number;
+  financeTotalCost: number;
+  amountToFinance: number;
 }
 
 class LeaseCalculator {
   /*
-    Validates required fields.
+    Validates required fields for leasing.
     Throws: Error | If there's an invalid required field
   */
-  _validateData(): void {
-    const requiredInputs = [
+  _validateLeaseParams(): void {
+    const requiredParamNames = [
       "MSRP",
       "Selling Price",
       "Residual Value",
       "Money Factor",
     ];
-    const requiredInput = [this.msrp, this.sellingPrice, this.rv, this.mf];
-    requiredInput.forEach((field, i) => {
-      if (!field || field === 0) {
-        throw new Error(`Invalid Input: ${requiredInputs[i]}`);
+    const params = [this.msrp, this.sellingPrice, this.rv, this.mf];
+    params.forEach((param, i) => {
+      if (!param || param === 0) {
+        throw new Error(`Invalid Input: ${requiredParamNames[i]}`);
+      }
+    });
+  }
+
+  /*
+    Validates required fields for financing.
+    Throws: Error | If there's an invalid required field
+  */
+  _validateFinanceParams(): void {
+    const requiredParamNames = ["Selling Price", "APR", "Finance Term"];
+    const params = [
+      this.finance.sellingPrice,
+      this.finance.APR,
+      this.finance.financeTerm,
+    ];
+    params.forEach((param, i) => {
+      if (!param || param === 0) {
+        throw new Error(`Invalid Input: ${requiredParamNames[i]}`);
       }
     });
   }
@@ -77,15 +112,15 @@ class LeaseCalculator {
     msrp           Required, MSRP of the vehicle
     sellingPrice   Required, negotiated price of the vehicle
     rv             Required, Residual value of the vehicle
-    isRVPercent    Whether the rv is absolute value of a percentage of MSRP
+    isRVPercent    Whether the rv is absolute value of a percentage of MSRP. Defaults to true
     mf             Required, The money factor of the lease
-    leaseTerm      The length of the lease in months.
-    salesTax       The state's sales tax in percentage.
-    totalFees      Total fees of the lease
-    rebates        Total discount from dealer and manufacturer
-    downPayment    Down payment, if applicable
-    taxMethod      Method of taxation to apply, based on state
-    isZeroDriveoff Whether fees & tax are capitalized
+    leaseTerm      The length of the lease in months. Defaults to 36
+    salesTax       The state's sales tax in percentage. Defaults to 0
+    totalFees      Total fees of the lease. Defaults to 0
+    rebates        Total discount from dealer and manufacturer. Defaults to 0
+    downPayment    Down payment, if applicable. Defaults to 0
+    taxMethod      Method of taxation to apply, based on state. Defaults to TaxationMethod.TAX_ON_MONTHLY_PAYMENT
+    isZeroDriveoff Whether fees & tax are capitalized. Defaults to false
   */
   calculate({
     make = "",
@@ -101,7 +136,7 @@ class LeaseCalculator {
     downPayment = 0,
     taxMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT,
     isZeroDriveoff = false,
-  }: LeaseValues): void {
+  }: LeaseParams): void {
     this.make = make;
     this.msrp = msrp;
     this.sellingPrice = sellingPrice;
@@ -116,7 +151,7 @@ class LeaseCalculator {
     this.taxMethod = taxMethod;
     this.isZeroDriveoff = isZeroDriveoff;
 
-    this._validateData();
+    this._validateLeaseParams();
     this._calculateRV();
 
     const grossCapCost =
@@ -129,6 +164,77 @@ class LeaseCalculator {
     this._netCapCost = grossCapCost - capCostReduction;
     this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax();
     this.monthlyPayment = this.calculateMonthlyPaymentWithTax();
+  }
+
+  /*
+    Calculates the finance monthly payment, total cost, etc.
+
+    make           Make of the vehicle, for calculating fees
+    sellingPrice   Required, negotiated price of the vehicle
+    financeTerm    The length of the loan in months.
+    salesTax       The state's sales tax in percentage.
+    taxableFees    Total taxable fees (non government)
+    untaxableFees  Total fees that are not taxable (government fees)
+    APR            The Annual Percentage Rate of the loan
+    downPayment    Down payment, if applicable
+    tradeIn        Trade-in value, if applicable 
+    rebates        Total discount from manufacturer
+  */
+  calculateFinance({
+    make = "",
+    sellingPrice,
+    financeTerm,
+    salesTax = 0,
+    taxableFees = 0,
+    untaxableFees = 0,
+    APR,
+    downPayment = 0,
+    tradeIn = 0,
+    rebates = 0,
+  }: FinanceParams) {
+    this.finance = {
+      make,
+      sellingPrice,
+      financeTerm,
+      salesTax,
+      taxableFees,
+      untaxableFees,
+      rebates,
+      downPayment,
+      APR,
+      tradeIn,
+    };
+
+    this._validateFinanceParams();
+
+    const taxAmount = this.finance.sellingPrice * (this.finance.salesTax / 100);
+    const taxableFeesAmount =
+      this.finance.taxableFees * (this.finance.salesTax / 100);
+
+    this.amountToFinance =
+      this.finance.sellingPrice -
+      this.finance.downPayment -
+      this.finance.tradeIn -
+      this.finance.rebates +
+      this.finance.untaxableFees +
+      this.finance.taxableFees +
+      taxableFeesAmount +
+      taxAmount;
+    const interestPerMonth = this.finance.APR / 100 / 12;
+
+    const interestComponent = Math.pow(
+      1 + interestPerMonth,
+      this.finance.financeTerm
+    );
+
+    this.financeMonthlyPayment =
+      (this.amountToFinance * interestPerMonth * interestComponent) /
+      (interestComponent - 1);
+
+    this.financeTotalCost =
+      this.financeMonthlyPayment * this.finance.financeTerm +
+      this.finance.downPayment +
+      this.finance.tradeIn;
   }
 
   /*
@@ -414,6 +520,57 @@ class LeaseCalculator {
           (this.tax * this.leaseTerm + this.calculateDriveOffTaxes()) * 100
         ) / 100
       : this.calculateDriveOffTaxes();
+  }
+
+  /*
+    Gets the finance monthly payment, inc. tax.
+    Throws Error if calculateFinance() wasn't invoked prior to calling it
+  */
+  getFinanceMonthlyPayment(): number {
+    if (!this.financeMonthlyPayment) {
+      throw new Error(`getFinanceMonthlyPayment: run calculateFinance() first`);
+    }
+    return Math.round(this.financeMonthlyPayment * 100) / 100;
+  }
+
+  /*
+    Gets the total cost of finance. Comprised of the monthly payment over the life of
+    the load plus down payment and any trade-in value.
+    Throws Error if calculateFinance() wasn't invoked prior to calling it
+  */
+  getFinanceTotalCost(): number {
+    if (!this.financeMonthlyPayment) {
+      throw new Error(`getFinanceTotalCost: run calculateFinance() first`);
+    }
+    return Math.round(this.financeTotalCost * 100) / 100;
+  }
+
+  /*
+    Gets the total financed amount. Comprised of the selling price plus any fees and taxes
+    minus down payment, trade-in value and any rebates.
+    Throws Error if calculateFinance() wasn't invoked prior to calling it
+  */
+  getTotalAmountFinanced(): number {
+    if (!this.financeMonthlyPayment) {
+      throw new Error(`getTotalAmountFinanced: run calculateFinance() first`);
+    }
+    return Math.round(this.amountToFinance * 100) / 100;
+  }
+
+  /*
+    Gets the total interest paid for finance.
+    Throws Error if calculateFinance() wasn't invoked prior to calling it
+  */
+  getFinanceTotalInterest(): number {
+    if (!this.financeMonthlyPayment) {
+      throw new Error(`getFinanceTotalInterest: run calculateFinance() first`);
+    }
+    const interest =
+      this.financeTotalCost -
+      this.amountToFinance -
+      this.finance.downPayment -
+      this.finance.tradeIn;
+    return Math.round(interest * 100) / 100;
   }
 }
 
