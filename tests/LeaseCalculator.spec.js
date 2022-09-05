@@ -666,7 +666,7 @@ describe("LeaseCalculator", () => {
         ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
         isZeroDriveoff: true,
       });
-      const driveOffDetails = leaseCalculator.getDriveOffPaymentDetails();
+      const driveOffDetails = leaseCalculator.getDriveOffPaymentBreakdown();
       expect(driveOffDetails).toBe(null);
     });
     it("details should include taxes, first month and Acq fee by default", () => {
@@ -674,14 +674,14 @@ describe("LeaseCalculator", () => {
         ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
         totalFees: 0,
       });
-      const driveOffDetails = leaseCalculator.getDriveOffPaymentDetails();
+      const driveOffDetails = leaseCalculator.getDriveOffPaymentBreakdown();
       expect(driveOffDetails).toEqual(defaultDriveOffDetails(leaseCalculator));
     });
     it("details should include fees when dealer/government fees exist", () => {
       leaseCalculator.calculate(
         DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT
       );
-      const driveOffDetails = leaseCalculator.getDriveOffPaymentDetails();
+      const driveOffDetails = leaseCalculator.getDriveOffPaymentBreakdown();
       expect(driveOffDetails).toEqual([
         ...defaultDriveOffDetails(leaseCalculator),
         {
@@ -696,7 +696,7 @@ describe("LeaseCalculator", () => {
         ...DUMMY_LEASE_WITH_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
         totalFees: 0,
       });
-      const driveOffDetails = leaseCalculator.getDriveOffPaymentDetails();
+      const driveOffDetails = leaseCalculator.getDriveOffPaymentBreakdown();
       expect(driveOffDetails).toEqual([
         ...defaultDriveOffDetails(leaseCalculator),
         {
