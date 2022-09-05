@@ -6,6 +6,11 @@ import {
   DUMMY_FINANCE_WITH_ZERO_DOWN_WITH_ZERO_TAX_WITH_FEES,
   DUMMY_FINANCE_WITH_DOWN_PAYMENT_WITH_TAX_WITH_FEES,
   DUMMY_FINANCE_WITH_TRADE_IN,
+  WHEN_ZERO_DOWN_ZERO_TAX_ZERO_FEES,
+  WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES,
+  WHEN_ZERO_DOWN_TAX_ZERO_FEES,
+  WHEN_ZERO_DOWN_ZERO_TAX_AND_FEES,
+  WHEN_DOWN_PAYMENT_TAX_AND_FEES,
 } from "./constants";
 
 describe("FinanceCalculator", () => {
@@ -49,11 +54,13 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct monthly payment", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(848.18);
+      expect(payment).toEqual(
+        WHEN_ZERO_DOWN_ZERO_TAX_ZERO_FEES.MONTHLY_PAYMENT
+      );
     });
     it("should get correct finance total cost", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(50891.07);
+      expect(totalCost).toEqual(WHEN_ZERO_DOWN_ZERO_TAX_ZERO_FEES.TOTAL_COST);
     });
     it("total amount to finance should match sellilng price", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
@@ -63,7 +70,9 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct total interest on finance", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(1891.07);
+      expect(totalInterest).toEqual(
+        WHEN_ZERO_DOWN_ZERO_TAX_ZERO_FEES.TOTAL_INTEREST
+      );
     });
   });
 
@@ -75,11 +84,15 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct monthly payment", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(813.56);
+      expect(payment).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.MONTHLY_PAYMENT
+      );
     });
     it("should get correct finance total cost", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(50813.88);
+      expect(totalCost).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.TOTAL_COST
+      );
     });
     it("total amount to finance should be selling price minus down payment", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
@@ -90,7 +103,9 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct total interest on finance", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(1813.88);
+      expect(totalInterest).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.TOTAL_INTEREST
+      );
     });
   });
 
@@ -102,19 +117,23 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct monthly payment", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(901.2);
+      expect(payment).toEqual(WHEN_ZERO_DOWN_TAX_ZERO_FEES.MONTHLY_PAYMENT);
     });
     it("should get correct finance total cost", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(54071.76);
+      expect(totalCost).toEqual(WHEN_ZERO_DOWN_TAX_ZERO_FEES.TOTAL_COST);
     });
     it("should get correct total amount to finance", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
-      expect(amountFinanced).toEqual(52062.5);
+      expect(amountFinanced).toEqual(
+        WHEN_ZERO_DOWN_TAX_ZERO_FEES.TOTAL_AMOUNT_TO_FINANCE
+      );
     });
     it("should get correct total interest on finance", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(2009.26);
+      expect(totalInterest).toEqual(
+        WHEN_ZERO_DOWN_TAX_ZERO_FEES.TOTAL_INTEREST
+      );
     });
   });
 
@@ -126,19 +145,23 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct monthly payment", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(874.15);
+      expect(payment).toEqual(WHEN_ZERO_DOWN_ZERO_TAX_AND_FEES.MONTHLY_PAYMENT);
     });
     it("should get correct finance total cost", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(52448.96);
+      expect(totalCost).toEqual(WHEN_ZERO_DOWN_ZERO_TAX_AND_FEES.TOTAL_COST);
     });
     it("should get correct total amount to finance", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
-      expect(amountFinanced).toEqual(50500);
+      expect(amountFinanced).toEqual(
+        WHEN_ZERO_DOWN_ZERO_TAX_AND_FEES.TOTAL_AMOUNT_TO_FINANCE
+      );
     });
     it("should get correct total interest on finance", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(1948.96);
+      expect(totalInterest).toEqual(
+        WHEN_ZERO_DOWN_ZERO_TAX_AND_FEES.TOTAL_INTEREST
+      );
     });
   });
 
@@ -150,19 +173,23 @@ describe("FinanceCalculator", () => {
     });
     it("should get correct monthly payment", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(893.62);
+      expect(payment).toEqual(WHEN_DOWN_PAYMENT_TAX_AND_FEES.MONTHLY_PAYMENT);
     });
     it("should get correct finance total cost", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(55617.38);
+      expect(totalCost).toEqual(WHEN_DOWN_PAYMENT_TAX_AND_FEES.TOTAL_COST);
     });
     it("should get correct total amount to finance", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
-      expect(amountFinanced).toEqual(51625);
+      expect(amountFinanced).toEqual(
+        WHEN_DOWN_PAYMENT_TAX_AND_FEES.TOTAL_AMOUNT_TO_FINANCE
+      );
     });
     it("should get correct total interest on finance", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(1992.38);
+      expect(totalInterest).toEqual(
+        WHEN_DOWN_PAYMENT_TAX_AND_FEES.TOTAL_INTEREST
+      );
     });
   });
 
@@ -172,11 +199,15 @@ describe("FinanceCalculator", () => {
     });
     it("should get the same monthly payment as with down", () => {
       const payment = leaseCalculator.getFinanceMonthlyPayment();
-      expect(payment).toEqual(813.56);
+      expect(payment).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.MONTHLY_PAYMENT
+      );
     });
     it("should get the same finance total cost as with down", () => {
       const totalCost = leaseCalculator.getFinanceTotalCost();
-      expect(totalCost).toEqual(50813.88);
+      expect(totalCost).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.TOTAL_COST
+      );
     });
     it("should get the same total amount to finance as with down", () => {
       const amountFinanced = leaseCalculator.getTotalAmountFinanced();
@@ -187,7 +218,9 @@ describe("FinanceCalculator", () => {
     });
     it("should get the same total interest on finance  as with down", () => {
       const totalInterest = leaseCalculator.getFinanceTotalInterest();
-      expect(totalInterest).toEqual(1813.88);
+      expect(totalInterest).toEqual(
+        WHEN_DOWN_PAYMENT_ZERO_TAX_ZERO_FEES.TOTAL_INTEREST
+      );
     });
   });
 });
