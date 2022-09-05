@@ -160,6 +160,22 @@ Gets the total tax for the lease. Added in v2.1.0.
 
 Returns a list of all drive-off payments. Returns null if isZeroDriveoff is true.
 
+### `getFinanceMonthlyPayment(): number`
+
+Returns the finance monthly payment, inc. tax.
+
+### `getFinanceTotalCost(): number`
+
+Returns the total cost of finance. Comprised of the monthly payment over the life of the load plus down payment and any trade-in value.
+
+### `getTotalAmountFinanced(): number`
+
+Returns the total financed amount. Comprised of the selling price plus any fees and taxes minus down payment, trade-in value and any rebates.
+
+### `getFinanceTotalInterest(): number`
+
+Returns the total interest paid for finance.
+
 ## Supported manufacturers
 
 Lease Calculator supports acquisition and disposition fee calculation for the following brands:
