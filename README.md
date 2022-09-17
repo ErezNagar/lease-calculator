@@ -11,6 +11,7 @@ See it used in the Auto Lease app: https://github.com/ErezNagar/lease-calculator
 ## Features
 
 - Calculates car lease payments including total monthly payment, monthly payment pre-tax, total lease cost, APR, percentage off MSRP and drive-off fees.
+- Since v4.0.0: Calculates car financing, including finance monthly payment, total finance cost and total finance interest
 - Supports methods of taxation by state
 - Includes acquisition fee for supported manufacturers
 - Includes disposition fee for supported manufacturers
@@ -25,7 +26,7 @@ npm install lease-calculator
 
 ```javascript
 const leaseCalculator = new LeaseCalculator();
-leaseCalculator.calculate({
+const lease = leaseCalculator.calculate({
   make: "Toyota",
   msrp: 23000,
   sellingPrice: 21000,
@@ -37,148 +38,198 @@ leaseCalculator.calculate({
 });
 
 // Get the lease monthly payment
-const monthlyPayment = leaseCalculator.getMonthlyPayment();
+const monthlyPayment = lease.getMonthlyPayment();
 ```
 
 ## API
 
-### `calculate(leaseValues: Object): void`
+### `calculate(options: Object): LeaseResults`
 
-Main function to calculate lease payments. Must be run prior to any other function in order to first calculate the lease numbers.
+Calculate lease payments. Returns LeaseResults object
 
 Arguments:
-leaseValues Object, with the following attributes:
+`options` object, with the following attributes:
 
 - `make: string = ""`
   Make of the vehicle, for calculating manufacturer-based fees.
 
 - `msrp: number`
-  Required, MSRP of the vehicle
+  Required, MSRP of the vehicle.
 
 - `sellingPrice: number`
-  Required, negotiated price of the vehicle
+  Required, negotiated price of the vehicle.
 
 - `rv: number`
   Required, residual value of the vehicle. If isRVPercent is true, value must be a percentage, e.g., if RV is 65%, rv should be 65.
 
 - `isRVPercent: boolean = true`
-  Whether the RV is an absolute value or a percentage of MSRP
+  Whether the RV is an absolute value or a percentage of MSRP.
 
 - `mf: number`
-  Required, the money factor of the lease (e.g. 0.00125)
+  Required, the money factor of the lease (e.g. 0.00125).
 
 - `leaseTerm: number = 36`
-  The length of the lease in months
+  The length of the lease in months.
 
 - `salesTax: number = 0`
-  The state's sales tax in percentage
+  The state's sales tax in percentage.
 
 - `totalFees: number = 0`
-  Total fees of the lease
+  Total fees of the lease.
 
 - `rebates: number = 0`
-  Total discount from dealer and manufacturer
+  Total discount from dealer and manufacturer.
 
 - `downPayment: number = 0`
-  Down payment, if applicable
+  Down payment, if applicable.
 
 - `taxMethod: TaxationMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT`
-  Method of taxation to apply, based on state
+  Method of taxation to apply, based on state.
 
 - `isZeroDriveoff: boolean = false`
   Added in v1.3.0. Whether the lease should be calculated with zero drive-off amount. If true, all fees and taxes are rolled into the monthly payment.
 
-### `getMonthlyPayment(): number`
+#### `LeaseResults.getMonthlyPayment(): number`
 
-Gets the monthly payment of the lease, including taxes
+Gets the monthly payment of the lease, including taxes.
 
-### `getMonthlyPaymentPreTax(): number`
+#### `LeaseResults.getMonthlyPaymentPreTax(): number`
 
-Gets the monthly payment of the lease, not including taxes
+Gets the monthly payment of the lease, not including taxes.
 
-### `getTotalLeaseCost(): number`
+#### `LeaseResults.getTotalLeaseCost(): number`
 
 Gets the total cost of the lease. This includes all monthly payments, down payment, disposition fee, acquisition fee, dealer fees and lease taxes.
 
-### `getDriveOffPayment(): number`
+#### `LeaseResults.getDriveOffPayment(): number`
 
-Gets total drive-off payment
+Gets total drive-off payment.
 
-### `getDriveOffTax(): number`
+#### `LeaseResults.getDriveOffTax(): number`
 
-Gets the tax amount on drive off payment
+Gets the tax amount on drive off payment.
 
-### `getDiscountOffMsrpPercentage(): number | null`
+#### `LeaseResults.getDiscountOffMsrpPercentage(): number | null`
 
-Gets the discount off of MSRP, in percentage. Returns null if Selling Price >= MSRP (v3.0.0)
+Gets the discount off of MSRP, in percentage. Returns null if Selling Price >= MSRP (v3.0.0).
 
-### `getMonthlyPaymentToMsrpPercentage(): number`
+#### `LeaseResults.getMonthlyPaymentToMsrpPercentage(): number`
 
-Gets the percentage of the monthly payment out of the MSRP
+Gets the percentage of the monthly payment out of the MSRP.
 
-### `getAPR()`
+#### `LeaseResults.getAPR()`
 
-Gets the APR value of the lease
+Gets the APR value of the lease.
 
-### `getAcquisitionFee(): number`
+#### `LeaseResults.getAcquisitionFee(): number`
 
-Gets the acquisition fee value by brand. If no brand sepcified, returns 0
+Gets the acquisition fee value by brand. If no brand sepcified, returns 0.
 
-### `getDispositionFee(): number`
+#### `LeaseResults.getDispositionFee(): number`
 
-Gets the disposition fee value by brand. If no brand sepcified, returns 0
+Gets the disposition fee value by brand. If no brand sepcified, returns 0.
 
-### `getRVValue(): number`
+#### `LeaseResults.getRVValue(): number`
 
-Gets the residual value of the lease
+Gets the residual value of the lease.
 
-### `getRVPercentage(): number`
+#### `LeaseResults.getRVPercentage(): number`
 
-Gets the residual value of the lease in percentage
+Gets the residual value of the lease in percentage.
 
-### `getDepreciation(): number`
+#### `LeaseResults.getDepreciation(): number`
 
 Gets the total depreciation value of the lease. Added in v2.1.0.
 
-### `getBaseMonthlyPayment(): number`
+#### `LeaseResults.getBaseMonthlyPayment(): number`
 
 Gets the base monthly payment. Added in v2.1.0.
 
-### `getRentCharge(): number`
+#### `LeaseResults.getRentCharge(): number`
 
 Gets the rent charge value. Added in v2.1.0.
 
-### `getTotalInterest(): number`
+#### `LeaseResults.getTotalInterest(): number`
 
 Gets total interest for the lease. Added in v2.1.0.
 
-### `getMonthlyTax(): number`
+#### `LeaseResults.getMonthlyTax(): number`
 
 Gets the monthly tax value. Applicable on for taxatino method is TAX_ON_MONTHLY_PAYMENT. Otherwise, returns 0. Added in v2.1.0.
 
-### `getTotalTax(): number`
+#### `LeaseResults.getTotalTax(): number`
 
 Gets the total tax for the lease. Added in v2.1.0.
 
-### `getDriveOffPaymentBreakdown(): object[] | null`
+#### `LeaseResults.getDriveOffPaymentBreakdown(): object[] | null`
 
 Returns a list of all drive-off payments. Returns null if isZeroDriveoff is true.
 
-### `getFinanceMonthlyPayment(): number`
+#### `LeaseResults.getFinanceMonthlyPayment(): number`
 
 Returns the finance monthly payment, inc. tax.
 
-### `getFinanceTotalCost(): number`
+#### `LeaseResults.getFinanceTotalCost(): number`
 
 Returns the total cost of finance. Comprised of the monthly payment over the life of the load plus down payment and any trade-in value.
 
-### `getTotalAmountFinanced(): number`
+#### `LeaseResults.getTotalAmountFinanced(): number`
 
 Returns the total financed amount. Comprised of the selling price plus any fees and taxes minus down payment, trade-in value and any rebates.
 
-### `getFinanceTotalInterest(): number`
+#### `LeaseResults.getFinanceTotalInterest(): number`
 
 Returns the total interest paid for finance.
+
+### `calculateFinance (options: Object): FinanceResults`
+
+Since v4.0.0. Calculates finance payments. Returns FinanceResults object.
+
+Arguments:
+`options` object, with the following attributes:
+
+- `financeTerm: number`
+  Required, the length of the loan, in months.
+
+- `sellingPrice: number`
+  Required, negotiated price of the vehicle.
+
+- `APR: number`
+  Required, the Annual Percentage Rate of the loan, in percentage (e.g. 4.5%).
+
+- `salesTax :number = 0`,
+  The state's sales tax, in percentage.
+
+- `taxableFees :number = 0`,
+  Total taxable fees (non-governmental fees such as dealer doc fees and any dealer add-ons)
+
+- `untaxableFees :number = 0`,
+  Total fees that are not taxable (government-related fees such as license and registration.
+
+- `downPayment :number = 0`,
+  Down payment, if applicable.
+
+- `tradeIn :number = 0`,
+  Trade-in value, if applicable.
+
+- `rebates :number = 0`,
+  Total discount from manufacturer.
+
+#### `FinanceResults.getFinanceMonthlyPayment(): number`
+
+Gets the financing monthly payment, including tax.
+
+#### `FinanceResults.getFinanceTotalCost(): number`
+
+Gets the total cost of the loan. Comprised of the monthly payment over the life of the loan plus down payment and any trade-in value.
+
+#### `FinanceResults.getTotalAmountFinanced(): number`
+
+Gets the total financed amount. Comprised of the selling price plus any fees and taxes.
+
+#### `FinanceResults.getFinanceTotalInterest(): number`
+
+Gets the total interest paid for duration of the loan.
 
 ## Supported manufacturers
 

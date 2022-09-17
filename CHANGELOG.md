@@ -5,19 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [4.0.0](https://github.com/ErezNagar/lease-calculator/compare/v3.0.0...v4.0.0) - 17/9/2022
+
+### Added
+
+- `calculateFinance (options: Object): FinanceResults`: added new functionality to calculate finance payments. Returns a `FinanceResults` object:
+
+  `FinanceResults.getFinanceMonthlyPayment(): number`: Gets the financing monthly payment, including tax.
+
+  `FinanceResults.getFinanceTotalCost(): number`: Gets the total cost of the loan. Comprised of the monthly payment over the life of the loan plus down payment and any trade-in value.
+
+  `FinanceResults.getTotalAmountFinanced(): number`: Gets the total financed amount. Comprised of the selling price plus any fees and taxes.
+
+  `FinanceResults.getFinanceTotalInterest(): number`: Gets the total interest paid for duration of the loan.
+
+- `LeaseResults.getDriveOffTax()` when calculating a lease - Gets the tax amount on drive off payment.
+
+### Updated
+
+- `LeaseResults.getDriveOffPaymentDetails()` updated to `LeaseResults.getDriveOffPaymentBreakdown()`
+
 ## [3.0.0](https://github.com/ErezNagar/lease-calculator/compare/v2.2.0...v3.0.0) - 08/7/2021
 
 ### Fixed
 
 - Fixed getDiscountOffMsrpPercentage() to return null when Selling Price
-  - `getDriveOffPaymentDetails(): object[] | null`
+  - `getDriveOffPaymentBreakdown(): object[] | null`
 
 ## [2.2.0](https://github.com/ErezNagar/lease-calculator/compare/v2.1.0...v2.2.0) - 04/6/2021
 
 ### Added
 
 - An ability to get a detailed list of all drive-off payments
-  - `getDriveOffPaymentDetails(): object[] | null`
+  - `getDriveOffPaymentBreakdown(): object[] | null`
 
 ## [2.1.0](https://github.com/ErezNagar/lease-calculator/compare/v2.0.0...v2.1.0) - 31/1/2021
 

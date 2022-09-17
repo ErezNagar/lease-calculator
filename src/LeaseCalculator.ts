@@ -17,7 +17,6 @@ type LeaseParams = {
 };
 
 type FinanceParams = {
-  make: string;
   sellingPrice: number;
   salesTax: number;
   rebates: number;
@@ -470,19 +469,17 @@ class LeaseCalculator {
   /*
     Calculates the finance monthly payment, total cost, etc.
 
-    make           Make of the vehicle, for calculating fees
     sellingPrice   Required, negotiated price of the vehicle
-    financeTerm    The length of the loan in months.
+    financeTerm    Required, the length of the loan in months.
     salesTax       The state's sales tax in percentage.
     taxableFees    Total taxable fees (non government)
     untaxableFees  Total fees that are not taxable (government fees)
-    APR            The Annual Percentage Rate of the loan
+    APR            Required, the Annual Percentage Rate of the loan, in percentage
     downPayment    Down payment, if applicable
     tradeIn        Trade-in value, if applicable 
     rebates        Total discount from manufacturer
   */
   calculateFinance({
-    make = "",
     sellingPrice,
     financeTerm,
     salesTax = 0,
@@ -494,7 +491,6 @@ class LeaseCalculator {
     rebates = 0,
   }: FinanceParams) {
     this.finance = {
-      make,
       sellingPrice,
       financeTerm,
       salesTax,
@@ -546,7 +542,7 @@ class LeaseCalculator {
 
       /*
         Gets the total cost of finance. Comprised of the monthly payment over the life of
-        the load plus down payment and any trade-in value.
+        the loan plus down payment and any trade-in value.
       */
       getFinanceTotalCost: (): number =>
         Math.round(this.financeTotalCost * 100) / 100,
@@ -560,7 +556,6 @@ class LeaseCalculator {
 
       /*
         Gets the total interest paid for finance.
-        Throws Error if calculateFinance() wasn't invoked prior to calling it
       */
       getFinanceTotalInterest: (): number => {
         const interest =
