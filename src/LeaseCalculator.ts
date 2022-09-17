@@ -44,6 +44,7 @@ interface LeaseCalculator extends LeaseParams, FinanceParams {
   financeMonthlyPayment: number;
   financeTotalCost: number;
   amountToFinance: number;
+  driveOffTaxes: number;
 }
 
 class LeaseCalculator {
@@ -212,12 +213,17 @@ class LeaseCalculator {
   };
 
   /*
+    Gets the tax amount on drive off payment
+  */
+  _getDriveOffTax = (): number => Math.round(this.driveOffTaxes * 100) / 100;
+
+  /*
     Calculates total drive-off payment
   */
   _getDriveOffPayment = (): number => {
     const driveoff = this.isZeroDriveoff
       ? 0
-      : this._calculateDriveOffTaxes() +
+      : this.driveOffTaxes +
         this.downPayment +
         this.totalFees +
         // First month payment
@@ -302,7 +308,7 @@ class LeaseCalculator {
       {
         type: "taxes",
         label: "Taxes",
-        amount: Math.round(this._calculateDriveOffTaxes() * 100) / 100,
+        amount: Math.round(this.driveOffTaxes * 100) / 100,
       },
       {
         type: "firstMonth",
@@ -371,10 +377,8 @@ class LeaseCalculator {
   */
   _getTotalTax = (): number =>
     this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
-      ? Math.round(
-          (this.tax * this.leaseTerm + this._calculateDriveOffTaxes()) * 100
-        ) / 100
-      : this._calculateDriveOffTaxes();
+      ? Math.round((this.tax * this.leaseTerm + this.driveOffTaxes) * 100) / 100
+      : this.driveOffTaxes;
 
   /*
     Calculates the lease' monthly payment, APR, total cost, etc.
@@ -435,17 +439,13 @@ class LeaseCalculator {
     this._netCapCost = grossCapCost - capCostReduction;
     this.monthlyPaymentPreTax = this._calculateMonthlyPaymentPreTax();
     this.monthlyPayment = this._calculateMonthlyPaymentWithTax();
+    this.driveOffTaxes = this._calculateDriveOffTaxes();
 
     return {
-      calculateMonthlyPaymentPreTax: (): number =>
-        this._calculateMonthlyPaymentPreTax(),
-      calculateMonthlyPaymentWithTax: (): number =>
-        this._calculateMonthlyPaymentWithTax(),
-      calculateTax: (): number => this._calculateTax(),
-      calculateDriveOffTaxes: (): number => this._calculateDriveOffTaxes(),
       getAcquisitionFee: (): number => this._getAcquisitionFee(),
       getDispositionFee: (): number => this._getDispositionFee(),
       getDriveOffPayment: (): number => this._getDriveOffPayment(),
+      getDriveOffTax: (): number => this._getDriveOffTax(),
       getDriveOffPaymentBreakdown: (): object[] | null =>
         this._getDriveOffPaymentBreakdown(),
       getRVPercentage: (): number => this._getRVPercentage(),

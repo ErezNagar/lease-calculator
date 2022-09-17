@@ -282,8 +282,7 @@ describe("LeaseCalculator", () => {
       const lease = leaseCalculator.calculate({
         ...DUMMY_LEASE_ZERO_DOWN_WITH_TAX_ON_MONTHLY_PAYMENT,
       });
-      const value =
-        lease.getMonthlyTax() * leaseTerm + lease.calculateDriveOffTaxes();
+      const value = lease.getMonthlyTax() * leaseTerm + lease.getDriveOffTax();
       const totalTaxes = Math.round(lease.getTotalTax());
       expect(Math.round(value)).toEqual(totalTaxes);
     });
@@ -636,7 +635,7 @@ describe("LeaseCalculator", () => {
       {
         type: "taxes",
         label: "Taxes",
-        amount: Math.round(lease.calculateDriveOffTaxes() * 100) / 100,
+        amount: Math.round(lease.getDriveOffTax() * 100) / 100,
       },
       {
         type: "firstMonth",

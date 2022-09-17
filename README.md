@@ -104,6 +104,10 @@ Gets the total cost of the lease. This includes all monthly payments, down payme
 
 Gets total drive-off payment
 
+### `getDriveOffTax(): number`
+
+Gets the tax amount on drive off payment
+
 ### `getDiscountOffMsrpPercentage(): number | null`
 
 Gets the discount off of MSRP, in percentage. Returns null if Selling Price >= MSRP (v3.0.0)
