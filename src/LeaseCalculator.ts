@@ -106,6 +106,277 @@ class LeaseCalculator {
   }
 
   /*
+    Gets the acquisition fee value by brand. If no brand sepcified, returns 0;
+  */
+  _getAcquisitionFee = (): number => {
+    const make = MAKES.filter((m) => m.displayName === this.make);
+    if (make.length === 0) {
+      return 0;
+    }
+    return make[0].acquisitionFee;
+  };
+
+  /*
+    Gets the disposition fee value by brand. If no brand sepcified, returns 0;
+  */
+  _getDispositionFee = (): number => {
+    const make = MAKES.filter((m) => m.displayName === this.make);
+    if (make.length === 0) {
+      return 0;
+    }
+    return make[0].dispositionFee ? make[0].dispositionFee : 0;
+  };
+
+  /*
+    Calculates base monthly payment
+  */
+  _calculateMonthlyPaymentPreTax = (capAddon: number = 0): number => {
+    this._netCapCost += capAddon;
+    this.depreciation = this._netCapCost - this.RVValue;
+    this.basePayment =
+      this.depreciation /
+      (this.isZeroDriveoff ? this.leaseTerm - 1 : this.leaseTerm);
+    this.rentCharge = (this._netCapCost + this.RVValue) * this.mf;
+    return this.basePayment + this.rentCharge;
+  };
+
+  /*
+    Calculates the lease tax amount based on method of taxation
+  */
+  _calculateTax = (): number => {
+    let taxableAmount;
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
+      taxableAmount =
+        this.monthlyPaymentPreTax + (this.isZeroDriveoff ? this.rebates : 0);
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
+      taxableAmount = this.sellingPrice;
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
+      taxableAmount =
+        this.monthlyPaymentPreTax * this.leaseTerm +
+        this.downPayment +
+        this.totalFees +
+        this._getAcquisitionFee() +
+        this._getDispositionFee();
+    }
+
+    return taxableAmount * (this.salesTax / 100);
+  };
+
+  /*
+    Calculates total monthly payment based on method of taxation
+  */
+  _calculateMonthlyPaymentWithTax = (): number => {
+    this.tax = this._calculateTax();
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
+      if (this.isZeroDriveoff) {
+        this.monthlyPaymentPreTax = this._calculateMonthlyPaymentPreTax(
+          this.tax
+        );
+        return this.monthlyPaymentPreTax * (1 + this.salesTax / 100);
+      }
+      return this.monthlyPaymentPreTax + this.tax;
+    }
+
+    if (this.isZeroDriveoff) {
+      // Capitalize the tax amount to account for zero drive-off
+      this.monthlyPaymentPreTax = this._calculateMonthlyPaymentPreTax(this.tax);
+    }
+    return this.monthlyPaymentPreTax;
+  };
+
+  /*
+    Calculates tax amount on drive off payment.
+    Applicable when isZeroDriveoff is false
+  */
+  _calculateDriveOffTaxes = (): number => {
+    let taxableAmount;
+    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
+      taxableAmount =
+        this.downPayment +
+        this.totalFees +
+        this.rebates +
+        this._getAcquisitionFee();
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
+      taxableAmount = this.sellingPrice;
+    } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
+      taxableAmount =
+        this.monthlyPaymentPreTax * this.leaseTerm +
+        this.downPayment +
+        this.totalFees +
+        this.rebates +
+        this._getAcquisitionFee() +
+        this._getDispositionFee();
+    }
+
+    return taxableAmount * (this.salesTax / 100);
+  };
+
+  /*
+    Calculates total drive-off payment
+  */
+  _getDriveOffPayment = (): number => {
+    const driveoff = this.isZeroDriveoff
+      ? 0
+      : this._calculateDriveOffTaxes() +
+        this.downPayment +
+        this.totalFees +
+        // First month payment
+        this.monthlyPayment +
+        this._getAcquisitionFee();
+
+    return Math.round(driveoff * 100) / 100;
+  };
+
+  /*
+    Gets the residual value of the lease in percentage
+  */
+  _getRVPercentage = (): number => Math.round(this.RVPercent);
+
+  /*
+    Gets the residual value of the lease
+  */
+  _getRVValue = (): number => Number.parseFloat(this.RVValue.toFixed(2));
+
+  /*
+    Gets the monthly payment of the lease, not including taxes
+  */
+  _getMonthlyPaymentPreTax = (): number =>
+    Math.round(this.monthlyPaymentPreTax * 100) / 100;
+
+  /*
+    Gets the monthly payment of the lease, including taxes
+  */
+  _getMonthlyPayment = (): number =>
+    Math.round(this.monthlyPayment * 100) / 100;
+
+  /*
+    Gets the discount off of the MSRP, in percentage.
+    Returns null if Selling Price >= MSRP
+  */
+  _getDiscountOffMsrpPercentage = (): number | null => {
+    const offMsrp = this.msrp - this.sellingPrice;
+    const offMsrpPercentage = (offMsrp / this.msrp) * 100;
+    const offMsrpPercentageRound = Math.round(offMsrpPercentage * 100) / 100;
+    return offMsrpPercentageRound <= 0 ? null : offMsrpPercentageRound;
+  };
+
+  /*
+    Gets the percentage of the monthly payment out of the MSRP
+  */
+  _getMonthlyPaymentToMsrpPercentage = (): number => {
+    const msrpPercentage = (this.monthlyPayment / this.msrp) * 100;
+    return Math.round(msrpPercentage * 100) / 100;
+  };
+
+  /*
+    Gets the total cost of the lease
+  */
+  _getTotalLeaseCost = (): number => {
+    const totalCost =
+      // First monthly payment is included in drive-off
+      this.monthlyPayment * (this.leaseTerm - 1) +
+      this._getDriveOffPayment() +
+      this._getDispositionFee();
+    return Math.round(totalCost * 100) / 100;
+  };
+
+  /*
+    Gets the APR value of the lease
+  */
+  _getAPR = (): number => {
+    if (!this.apr) {
+      this.apr = this._MFToAPR();
+    }
+    return Math.round(this.apr * 100) / 100;
+  };
+
+  /*
+    Returns a list of all drive-off payments.
+    Returns null if isZeroDriveoff is true.
+  */
+  _getDriveOffPaymentBreakdown = (): object[] | null => {
+    if (this.isZeroDriveoff) {
+      return null;
+    }
+    const payments = [
+      {
+        type: "taxes",
+        label: "Taxes",
+        amount: Math.round(this._calculateDriveOffTaxes() * 100) / 100,
+      },
+      {
+        type: "firstMonth",
+        label: "First month",
+        amount: Math.round(this.monthlyPayment * 100) / 100,
+      },
+      {
+        type: "acquisitionFee",
+        label: "Acquisition Fee",
+        amount: this._getAcquisitionFee(),
+      },
+    ];
+
+    if (this.downPayment) {
+      payments.push({
+        type: "downPayment",
+        label: "Down Payment",
+        amount: this.downPayment,
+      });
+    }
+
+    if (this.totalFees) {
+      payments.push({
+        type: "totalFees",
+        label: "Dealer & Government Fees",
+        amount: this.totalFees,
+      });
+    }
+
+    return payments;
+  };
+
+  /*
+    Gets total depreciation value
+  */
+  _getDepreciation = (): number => this.depreciation;
+
+  /*
+    Gets the base monthly payment
+  */
+  _getBaseMonthlyPayment = (): number =>
+    Math.round(this.basePayment * 100) / 100;
+
+  /*
+    Gets the rent charge value ("monthly MF")
+  */
+  _getRentCharge = (): number => Math.round(this.rentCharge * 100) / 100;
+
+  /*
+    Gets total interest for the lease
+  */
+  _getTotalInterest = (): number =>
+    Math.round(this.rentCharge * this.leaseTerm * 100) / 100;
+
+  /*
+    Gets the monthly tax value. Applicable only when taxation method is TAX_ON_MONTHLY_PAYMENT.
+    Otherwise, returns 0.
+  */
+  _getMonthlyTax = (): number =>
+    this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
+      ? Math.round(this.tax * 100) / 100
+      : 0;
+
+  /*
+    Gets the total tax for the lease
+  */
+  _getTotalTax = (): number =>
+    this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
+      ? Math.round(
+          (this.tax * this.leaseTerm + this._calculateDriveOffTaxes()) * 100
+        ) / 100
+      : this._calculateDriveOffTaxes();
+
+  /*
     Calculates the lease' monthly payment, APR, total cost, etc.
 
     make           Make of the vehicle, for calculating fees
@@ -136,7 +407,7 @@ class LeaseCalculator {
     downPayment = 0,
     taxMethod = TaxationMethod.TAX_ON_MONTHLY_PAYMENT,
     isZeroDriveoff = false,
-  }: LeaseParams): void {
+  }: LeaseParams) {
     this.make = make;
     this.msrp = msrp;
     this.sellingPrice = sellingPrice;
@@ -156,14 +427,44 @@ class LeaseCalculator {
 
     const grossCapCost =
       this.sellingPrice +
-      (this.isZeroDriveoff ? this.totalFees + this.getAcquisitionFee() : 0);
+      (this.isZeroDriveoff ? this.totalFees + this._getAcquisitionFee() : 0);
 
     const capCostReduction =
       this.rebates + (this.isZeroDriveoff ? 0 : this.downPayment);
 
     this._netCapCost = grossCapCost - capCostReduction;
-    this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax();
-    this.monthlyPayment = this.calculateMonthlyPaymentWithTax();
+    this.monthlyPaymentPreTax = this._calculateMonthlyPaymentPreTax();
+    this.monthlyPayment = this._calculateMonthlyPaymentWithTax();
+
+    return {
+      calculateMonthlyPaymentPreTax: (): number =>
+        this._calculateMonthlyPaymentPreTax(),
+      calculateMonthlyPaymentWithTax: (): number =>
+        this._calculateMonthlyPaymentWithTax(),
+      calculateTax: (): number => this._calculateTax(),
+      calculateDriveOffTaxes: (): number => this._calculateDriveOffTaxes(),
+      getAcquisitionFee: (): number => this._getAcquisitionFee(),
+      getDispositionFee: (): number => this._getDispositionFee(),
+      getDriveOffPayment: (): number => this._getDriveOffPayment(),
+      getDriveOffPaymentBreakdown: (): object[] | null =>
+        this._getDriveOffPaymentBreakdown(),
+      getRVPercentage: (): number => this._getRVPercentage(),
+      getRVValue: (): number => this._getRVValue(),
+      getDepreciation: (): number => this._getDepreciation(),
+      getBaseMonthlyPayment: (): number => this._getBaseMonthlyPayment(),
+      getRentCharge: (): number => this._getRentCharge(),
+      getTotalInterest: (): number => this._getTotalInterest(),
+      getMonthlyTax: (): number => this._getMonthlyTax(),
+      getTotalTax: (): number => this._getTotalTax(),
+      getMonthlyPayment: (): number => this._getMonthlyPayment(),
+      getDiscountOffMsrpPercentage: (): number | null =>
+        this._getDiscountOffMsrpPercentage(),
+      getMonthlyPaymentPreTax: (): number => this._getMonthlyPaymentPreTax(),
+      getMonthlyPaymentToMsrpPercentage: (): number =>
+        this._getMonthlyPaymentToMsrpPercentage(),
+      getTotalLeaseCost: (): number => this._getTotalLeaseCost(),
+      getAPR: (): number => this._getAPR(),
+    };
   }
 
   /*
@@ -235,342 +536,41 @@ class LeaseCalculator {
       this.financeMonthlyPayment * this.finance.financeTerm +
       this.finance.downPayment +
       this.finance.tradeIn;
-  }
 
-  /*
-    Calculates base monthly payment
-  */
-  calculateMonthlyPaymentPreTax(capAddon: number = 0): number {
-    this._netCapCost += capAddon;
-    this.depreciation = this._netCapCost - this.RVValue;
-    this.basePayment =
-      this.depreciation /
-      (this.isZeroDriveoff ? this.leaseTerm - 1 : this.leaseTerm);
-    this.rentCharge = (this._netCapCost + this.RVValue) * this.mf;
-    return this.basePayment + this.rentCharge;
-  }
+    return {
+      /*
+        Gets the finance monthly payment, inc. tax.
+      */
+      getFinanceMonthlyPayment: (): number =>
+        Math.round(this.financeMonthlyPayment * 100) / 100,
 
-  /*
-    Calculates total monthly payment based on method of taxation
-  */
-  calculateMonthlyPaymentWithTax(): number {
-    this.tax = this.calculateTax();
-    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
-      if (this.isZeroDriveoff) {
-        this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(
-          this.tax
-        );
-        return this.monthlyPaymentPreTax * (1 + this.salesTax / 100);
-      }
-      return this.monthlyPaymentPreTax + this.tax;
-    }
+      /*
+        Gets the total cost of finance. Comprised of the monthly payment over the life of
+        the load plus down payment and any trade-in value.
+      */
+      getFinanceTotalCost: (): number =>
+        Math.round(this.financeTotalCost * 100) / 100,
 
-    if (this.isZeroDriveoff) {
-      // Capitalize the tax amount to account for zero drive-off
-      this.monthlyPaymentPreTax = this.calculateMonthlyPaymentPreTax(this.tax);
-    }
-    return this.monthlyPaymentPreTax;
-  }
+      /*
+        Gets the total financed amount. Comprised of the selling price plus any fees and taxes
+        minus down payment, trade-in value and any rebates.
+      */
+      getTotalAmountFinanced: (): number =>
+        Math.round(this.amountToFinance * 100) / 100,
 
-  /*
-    Calculates the lease tax amount based on method of taxation
-  */
-  calculateTax(): number {
-    let taxableAmount;
-    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
-      taxableAmount =
-        this.monthlyPaymentPreTax + (this.isZeroDriveoff ? this.rebates : 0);
-    } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
-      taxableAmount = this.sellingPrice;
-    } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
-      taxableAmount =
-        this.monthlyPaymentPreTax * this.leaseTerm +
-        this.downPayment +
-        this.totalFees +
-        this.getAcquisitionFee() +
-        this.getDispositionFee();
-    }
-
-    return taxableAmount * (this.salesTax / 100);
-  }
-
-  /*
-    Calculates tax amount on drive off payment.
-    Applicable when isZeroDriveoff is false
-  */
-  calculateDriveOffTaxes(): number {
-    let taxableAmount;
-    if (this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT) {
-      taxableAmount =
-        this.downPayment +
-        this.totalFees +
-        this.rebates +
-        this.getAcquisitionFee();
-    } else if (this.taxMethod === TaxationMethod.TAX_ON_SALES_PRICE) {
-      taxableAmount = this.sellingPrice;
-    } else if (this.taxMethod === TaxationMethod.TAX_ON_TOTAL_LEASE_PAYMENT) {
-      taxableAmount =
-        this.monthlyPaymentPreTax * this.leaseTerm +
-        this.downPayment +
-        this.totalFees +
-        this.rebates +
-        this.getAcquisitionFee() +
-        this.getDispositionFee();
-    }
-
-    return taxableAmount * (this.salesTax / 100);
-  }
-
-  /*
-    Gets the residual value of the lease in percentage
-  */
-  getRVPercentage(): number {
-    return Math.round(this.RVPercent);
-  }
-
-  /*
-    Gets the residual value of the lease
-  */
-  getRVValue(): number {
-    return Number.parseFloat(this.RVValue.toFixed(2));
-  }
-
-  /*
-    Gets the monthly payment of the lease, not including taxes
-  */
-  getMonthlyPaymentPreTax(): number {
-    return Math.round(this.monthlyPaymentPreTax * 100) / 100;
-  }
-
-  /*
-    Gets the monthly payment of the lease, including taxes
-  */
-  getMonthlyPayment(): number {
-    return Math.round(this.monthlyPayment * 100) / 100;
-  }
-
-  /*
-    Gets the discount off of the MSRP, in percentage.
-    Returns null if Selling Price >= MSRP
-  */
-  getDiscountOffMsrpPercentage(): number | null {
-    const offMsrp = this.msrp - this.sellingPrice;
-    const offMsrpPercentage = (offMsrp / this.msrp) * 100;
-    const offMsrpPercentageRound = Math.round(offMsrpPercentage * 100) / 100;
-    return offMsrpPercentageRound <= 0 ? null : offMsrpPercentageRound;
-  }
-
-  /*
-    Gets the percentage of the monthly payment out of the MSRP
-  */
-  getMonthlyPaymentToMsrpPercentage(): number {
-    const msrpPercentage = (this.monthlyPayment / this.msrp) * 100;
-    return Math.round(msrpPercentage * 100) / 100;
-  }
-
-  /*
-    Gets the total cost of the lease
-  */
-  getTotalLeaseCost(): number {
-    const totalCost =
-      // First monthly payment is included in drive-off
-      this.monthlyPayment * (this.leaseTerm - 1) +
-      this.getDriveOffPayment() +
-      this.getDispositionFee();
-    return Math.round(totalCost * 100) / 100;
-  }
-
-  /*
-    Gets the APR value of the lease
-  */
-  getAPR(): number {
-    if (!this.apr) {
-      this.apr = this._MFToAPR();
-    }
-    return Math.round(this.apr * 100) / 100;
-  }
-
-  /*
-    Gets the acquisition fee value by brand. If no brand sepcified, returns 0;
-  */
-  getAcquisitionFee(): number {
-    const make = MAKES.filter((m) => m.displayName === this.make);
-    if (make.length === 0) {
-      return 0;
-    }
-    return make[0].acquisitionFee;
-  }
-
-  /*
-    Gets the disposition fee value by brand. If no brand sepcified, returns 0;
-  */
-  getDispositionFee(): number {
-    const make = MAKES.filter((m) => m.displayName === this.make);
-    if (make.length === 0) {
-      return 0;
-    }
-    return make[0].dispositionFee ? make[0].dispositionFee : 0;
-  }
-
-  /*
-    Calculates total drive-off payment
-  */
-  getDriveOffPayment(): number {
-    const driveoff = this.isZeroDriveoff
-      ? 0
-      : this.calculateDriveOffTaxes() +
-        this.downPayment +
-        this.totalFees +
-        // First month payment
-        this.monthlyPayment +
-        this.getAcquisitionFee();
-
-    return Math.round(driveoff * 100) / 100;
-  }
-
-  /*
-    Returns a list of all drive-off payments.
-    Returns null if isZeroDriveoff is true.
-  */
-  getDriveOffPaymentBreakdown(): object[] | null {
-    if (this.isZeroDriveoff) {
-      return null;
-    }
-    const payments = [
-      {
-        type: "taxes",
-        label: "Taxes",
-        amount: Math.round(this.calculateDriveOffTaxes() * 100) / 100,
+      /*
+        Gets the total interest paid for finance.
+        Throws Error if calculateFinance() wasn't invoked prior to calling it
+      */
+      getFinanceTotalInterest: (): number => {
+        const interest =
+          this.financeTotalCost -
+          this.amountToFinance -
+          this.finance.downPayment -
+          this.finance.tradeIn;
+        return Math.round(interest * 100) / 100;
       },
-      {
-        type: "firstMonth",
-        label: "First month",
-        amount: Math.round(this.monthlyPayment * 100) / 100,
-      },
-      {
-        type: "acquisitionFee",
-        label: "Acquisition Fee",
-        amount: this.getAcquisitionFee(),
-      },
-    ];
-
-    if (this.downPayment) {
-      payments.push({
-        type: "downPayment",
-        label: "Down Payment",
-        amount: this.downPayment,
-      });
-    }
-
-    if (this.totalFees) {
-      payments.push({
-        type: "totalFees",
-        label: "Dealer & Government Fees",
-        amount: this.totalFees,
-      });
-    }
-
-    return payments;
-  }
-
-  /*
-    Gets total depreciation value
-  */
-  getDepreciation(): number {
-    return this.depreciation;
-  }
-
-  /*
-    Gets the base monthly payment
-  */
-  getBaseMonthlyPayment(): number {
-    return Math.round(this.basePayment * 100) / 100;
-  }
-
-  /*
-    Gets the rent charge value ("monthly MF")
-  */
-  getRentCharge(): number {
-    return Math.round(this.rentCharge * 100) / 100;
-  }
-
-  /*
-    Gets total interest for the lease
-  */
-  getTotalInterest(): number {
-    return Math.round(this.rentCharge * this.leaseTerm * 100) / 100;
-  }
-
-  /*
-    Gets the monthly tax value. Applicable only when taxation method is TAX_ON_MONTHLY_PAYMENT.
-    Otherwise, returns 0.
-  */
-  getMonthlyTax(): number {
-    return this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
-      ? Math.round(this.tax * 100) / 100
-      : 0;
-  }
-
-  /*
-    Gets the total tax for the lease
-  */
-  getTotalTax(): number {
-    return this.taxMethod === TaxationMethod.TAX_ON_MONTHLY_PAYMENT
-      ? Math.round(
-          (this.tax * this.leaseTerm + this.calculateDriveOffTaxes()) * 100
-        ) / 100
-      : this.calculateDriveOffTaxes();
-  }
-
-  /*
-    Gets the finance monthly payment, inc. tax.
-    Throws Error if calculateFinance() wasn't invoked prior to calling it
-  */
-  getFinanceMonthlyPayment(): number {
-    if (!this.financeMonthlyPayment) {
-      throw new Error(`getFinanceMonthlyPayment: run calculateFinance() first`);
-    }
-    return Math.round(this.financeMonthlyPayment * 100) / 100;
-  }
-
-  /*
-    Gets the total cost of finance. Comprised of the monthly payment over the life of
-    the load plus down payment and any trade-in value.
-    Throws Error if calculateFinance() wasn't invoked prior to calling it
-  */
-  getFinanceTotalCost(): number {
-    if (!this.financeMonthlyPayment) {
-      throw new Error(`getFinanceTotalCost: run calculateFinance() first`);
-    }
-    return Math.round(this.financeTotalCost * 100) / 100;
-  }
-
-  /*
-    Gets the total financed amount. Comprised of the selling price plus any fees and taxes
-    minus down payment, trade-in value and any rebates.
-    Throws Error if calculateFinance() wasn't invoked prior to calling it
-  */
-  getTotalAmountFinanced(): number {
-    if (!this.financeMonthlyPayment) {
-      throw new Error(`getTotalAmountFinanced: run calculateFinance() first`);
-    }
-    return Math.round(this.amountToFinance * 100) / 100;
-  }
-
-  /*
-    Gets the total interest paid for finance.
-    Throws Error if calculateFinance() wasn't invoked prior to calling it
-  */
-  getFinanceTotalInterest(): number {
-    if (!this.financeMonthlyPayment) {
-      throw new Error(`getFinanceTotalInterest: run calculateFinance() first`);
-    }
-    const interest =
-      this.financeTotalCost -
-      this.amountToFinance -
-      this.finance.downPayment -
-      this.finance.tradeIn;
-    return Math.round(interest * 100) / 100;
+    };
   }
 }
 
